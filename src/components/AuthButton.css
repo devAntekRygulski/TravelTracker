@@ -1,0 +1,55 @@
+.auth-button {
+  position: relative;
+  width: 100%;
+  max-width: 280px;
+  padding: 1rem 2rem;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-radius: 8px;
+  transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
+}
+
+.auth-button:not(:disabled):hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(245, 197, 24, 0.25);
+}
+
+.auth-button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+.auth-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.auth-button--login {
+  background-color: var(--yellow-bright);
+  color: var(--text-dark);
+}
+
+.auth-button--signup {
+  background-color: var(--yellow-dim);
+  color: var(--text-dark);
+}
+
+.auth-button--guest {
+  background-color: var(--bg-dark);
+  color: var(--yellow-bright);
+  border: 2px solid var(--yellow-bright);
+}
+
+.auth-button__badge {
+  position: absolute;
+  top: -0.5rem;
+  right: -0.5rem;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  border: 1px solid var(--yellow-dim);
+  border-radius: 4px;
+}
