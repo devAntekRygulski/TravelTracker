@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { countVisitedContinents } from '../data/countryContinents';
 
 const STORAGE_KEY = 'visitedCountries';
 
@@ -42,9 +43,15 @@ export function useVisitedCountries() {
     [visited],
   );
 
+  const continentCount = useMemo(
+    () => countVisitedContinents(visited),
+    [visited],
+  );
+
   return {
     visited,
     count: visited.size,
+    continentCount,
     toggle,
     isVisited,
   };

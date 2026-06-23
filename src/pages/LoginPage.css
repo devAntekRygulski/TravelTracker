@@ -11,20 +11,29 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 2rem;
   width: 100%;
   max-width: 360px;
 }
 
-.login-page__title {
-  font-size: 2.25rem;
-  font-weight: 700;
-  color: var(--yellow-bright);
-  letter-spacing: -0.02em;
+.login-page__logo-wrap {
+  width: min(100%, 240px);
+  height: 92px;
+  overflow: hidden;
+  line-height: 0;
+  margin-bottom: -0.55rem;
+}
+
+.login-page__logo {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform: translateY(-20%);
 }
 
 .login-page__subtitle {
-  font-size: 1rem;
+  margin: 0;
+  font-size: 0.875rem;
   color: var(--text-primary);
   opacity: 0.75;
   text-align: center;
@@ -36,5 +45,10 @@
   align-items: center;
   gap: 1rem;
   width: 100%;
-  margin-top: 1rem;
+}
+
+.login-page__create-account {
+  font-size: 0.875rem;
+  color: #9a9a9a;
+  text-align: center;
 }

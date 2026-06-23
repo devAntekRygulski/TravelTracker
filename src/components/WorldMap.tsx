@@ -1,13 +1,21 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { geoMercator } from 'd3-geo';
+import { geoCentroid, geoMercator, type GeoProjection } from 'd3-geo';
 import { feature } from 'topojson-client';
-import type { FeatureCollection, Geometry } from 'geojson';
+import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { Topology } from 'topojson-specification';
 import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import type { ProjectionFunction } from 'react-simple-maps';
 import './WorldMap.css';
 
 const GEO_URL = '/countries-110m.json';
-const MAP_PADDING = 12;
+const MAP_PADDING = {
+  top: 10,
+  right: 8,
+  bottom: 8,
+  left: 8,
+};
+// Shift the central meridian so Russia's eastern territories stay attached to the mainland.
+const MAP_ROTATION: [number, number] = [-10, 0];
 
 const EXCLUDED_COUNTRY_IDS = new Set([
   '010', // Antarctica
@@ -20,6 +28,50 @@ const COLORS = {
   hover: '#3d3d3d',
   yellow: '#f5c518',
 };
+
+// Uniform pixel gap between every shared border (screen pixels, not geographic scale).
+const COUNTRY_GAP = 4;
+const BORDER_WIDTH = 0.3;
+const BORDER_WIDTH_ACTIVE = 0.45;
+const HOVER_SCALE = 1.08;
+
+function getHoverTransform(
+  geo: Feature<Geometry>,
+  projection: GeoProjection,
+  hovered: boolean,
+): string {
+  if (!hovered) return '';
+
+  const centroid = projection(geoCentroid(geo));
+  if (!centroid) return '';
+
+  const [cx, cy] = centroid;
+  return `translate(${cx},${cy}) scale(${HOVER_SCALE}) translate(${-cx},${-cy})`;
+}
+
+function countryFillStyle(visited: boolean, hovered = false) {
+  return {
+    fill: visited ? COLORS.yellow : hovered ? COLORS.hover : COLORS.bg,
+    stroke: COLORS.bg,
+    strokeWidth: COUNTRY_GAP,
+    strokeLinejoin: 'round' as const,
+    paintOrder: 'stroke fill' as const,
+    vectorEffect: 'non-scaling-stroke' as const,
+    outline: 'none',
+  };
+}
+
+function countryBorderStyle(strokeWidth = BORDER_WIDTH) {
+  return {
+    fill: 'none',
+    stroke: COLORS.yellow,
+    strokeWidth,
+    strokeLinejoin: 'round' as const,
+    vectorEffect: 'non-scaling-stroke' as const,
+    outline: 'none',
+    pointerEvents: 'none' as const,
+  };
+}
 
 interface WorldMapProps {
   isVisited: (countryId: string) => boolean;
@@ -47,34 +99,32 @@ function filterTopology(topology: Topology): Topology {
   };
 }
 
-function computeProjection(
+function createMapProjection(
   topology: Topology,
   width: number,
   height: number,
-): { scale: number; center: [number, number] } {
+): GeoProjection {
   const collection = feature(
     topology,
     topology.objects.countries as Parameters<typeof feature>[1],
   ) as FeatureCollection<Geometry>;
 
-  const projection = geoMercator().fitExtent(
-    [
-      [MAP_PADDING, MAP_PADDING],
-      [width - MAP_PADDING, height - MAP_PADDING],
-    ],
-    collection,
-  );
-
-  return {
-    scale: projection.scale(),
-    center: projection.center() as [number, number],
-  };
+  return geoMercator()
+    .rotate(MAP_ROTATION)
+    .fitExtent(
+      [
+        [MAP_PADDING.left, MAP_PADDING.top],
+        [width - MAP_PADDING.right, height - MAP_PADDING.bottom],
+      ],
+      collection,
+    );
 }
 
 export function WorldMap({ isVisited, onToggle }: WorldMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [topology, setTopology] = useState<Topology | null>(null);
+  const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,63 +159,89 @@ export function WorldMap({ isVisited, onToggle }: WorldMapProps) {
     return () => observer.disconnect();
   }, []);
 
-  const projectionConfig = useMemo(() => {
+  const mapProjection = useMemo(() => {
     if (!topology || dimensions.width === 0 || dimensions.height === 0) {
-      return undefined;
+      return null;
     }
 
-    return computeProjection(topology, dimensions.width, dimensions.height);
+    return createMapProjection(topology, dimensions.width, dimensions.height);
   }, [topology, dimensions]);
 
-  if (!topology || !projectionConfig || dimensions.width === 0 || dimensions.height === 0) {
+  const clearHover = () => setHoveredCountryId(null);
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    const countryElement = (event.target as Element).closest('[data-country-id]');
+    const nextId = countryElement?.getAttribute('data-country-id') ?? null;
+    setHoveredCountryId((current) => (current === nextId ? current : nextId));
+  };
+
+  if (!topology || !mapProjection || dimensions.width === 0 || dimensions.height === 0) {
     return <div className="world-map" ref={containerRef} />;
   }
 
   return (
-    <div className="world-map" ref={containerRef}>
+    <div
+      className="world-map"
+      ref={containerRef}
+      onPointerMove={handlePointerMove}
+      onPointerLeave={clearHover}
+    >
       <ComposableMap
-        projection="geoMercator"
+        projection={mapProjection as unknown as ProjectionFunction}
         width={dimensions.width}
         height={dimensions.height}
-        projectionConfig={projectionConfig}
         style={{ width: '100%', height: '100%' }}
       >
         <Geographies geography={topology}>
           {({ geographies }) =>
-            geographies.map((geo) => {
+            [...geographies]
+              .sort((a, b) => {
+                const aHovered = String(a.id) === hoveredCountryId ? 1 : 0;
+                const bHovered = String(b.id) === hoveredCountryId ? 1 : 0;
+                return aHovered - bHovered;
+              })
+              .map((geo) => {
               const countryId = String(geo.id);
               const visited = isVisited(countryId);
+              const hovered = hoveredCountryId === countryId;
               const countryName =
                 (geo.properties as { name?: string })?.name ?? countryId;
 
+              const fillStyle = {
+                ...countryFillStyle(visited, hovered),
+                cursor: 'pointer',
+              };
+              const borderStyle = countryBorderStyle(
+                hovered ? BORDER_WIDTH_ACTIVE : BORDER_WIDTH,
+              );
+
               return (
-                <Geography
+                <g
                   key={geo.rsmKey}
-                  geography={geo}
-                  aria-label={countryName}
-                  onClick={() => onToggle(countryId)}
-                  style={{
-                    default: {
-                      fill: visited ? COLORS.yellow : COLORS.bg,
-                      stroke: COLORS.yellow,
-                      strokeWidth: 0.6,
-                      outline: 'none',
-                    },
-                    hover: {
-                      fill: visited ? COLORS.yellow : COLORS.hover,
-                      stroke: COLORS.yellow,
-                      strokeWidth: 1,
-                      outline: 'none',
-                      cursor: 'pointer',
-                    },
-                    pressed: {
-                      fill: COLORS.yellow,
-                      stroke: COLORS.yellow,
-                      strokeWidth: 1,
-                      outline: 'none',
-                    },
-                  }}
-                />
+                  className="world-map__country"
+                  data-country-id={countryId}
+                  transform={getHoverTransform(geo, mapProjection, hovered)}
+                >
+                  <Geography
+                    geography={geo}
+                    aria-label={countryName}
+                    onClick={() => onToggle(countryId)}
+                    style={{
+                      default: fillStyle,
+                      hover: fillStyle,
+                      pressed: fillStyle,
+                    }}
+                  />
+                  <Geography
+                    geography={geo}
+                    tabIndex={-1}
+                    style={{
+                      default: borderStyle,
+                      hover: borderStyle,
+                      pressed: borderStyle,
+                    }}
+                  />
+                </g>
               );
             })
           }
