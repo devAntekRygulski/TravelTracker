@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { WorldMap } from '../components/WorldMap';
 import { MapStats } from '../components/MapStats';
+import { useAuth } from '../hooks/useAuth';
 import { useVisitedCountries } from '../hooks/useVisitedCountries';
 import './MapPage.css';
 
@@ -9,17 +10,26 @@ const LOGO_URL = '/travel-tracker-logo.png';
 
 export function MapPage() {
   const navigate = useNavigate();
+  const { user, isGuest, isLoading, logout } = useAuth();
   const { toggle, isVisited, count, continentCount } = useVisitedCountries();
 
   useEffect(() => {
-    if (sessionStorage.getItem('guestMode') !== 'true') {
+    if (!isLoading && !user && !isGuest) {
       navigate('/', { replace: true });
     }
-  }, [navigate]);
+  }, [isLoading, user, isGuest, navigate]);
 
   const handleGoBack = () => {
-    sessionStorage.removeItem('guestMode');
+    logout();
   };
+
+  if (isLoading) {
+    return <div className="map-page map-page--loading" />;
+  }
+
+  if (!user && !isGuest) {
+    return null;
+  }
 
   return (
     <div className="map-page">

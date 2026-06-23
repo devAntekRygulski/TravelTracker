@@ -1,9 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { countVisitedContinents } from '../data/countryContinents';
+import { useAuth } from './useAuth';
+import { api } from '../lib/api';
 
 const STORAGE_KEY = 'visitedCountries';
 
-function loadVisited(): Set<string> {
+function loadGuestVisited(): Set<string> {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return new Set();
@@ -15,28 +23,80 @@ function loadVisited(): Set<string> {
   }
 }
 
-function saveVisited(visited: Set<string>) {
+function saveGuestVisited(visited: Set<string>) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify([...visited]));
 }
 
 export function useVisitedCountries() {
-  const [visited, setVisited] = useState<Set<string>>(loadVisited);
+  const { user, token, isGuest, updateUserVisitedCountries } = useAuth();
+  const [guestVisited, setGuestVisited] = useState<Set<string>>(loadGuestVisited);
+  const syncRequestId = useRef(0);
+
+  const visited = useMemo(() => {
+    if (user) {
+      return new Set(user.visitedCountries);
+    }
+
+    return guestVisited;
+  }, [user, guestVisited]);
 
   useEffect(() => {
-    saveVisited(visited);
-  }, [visited]);
+    if (isGuest && !user) {
+      saveGuestVisited(guestVisited);
+    }
+  }, [guestVisited, isGuest, user]);
 
-  const toggle = useCallback((countryId: string) => {
-    setVisited((prev) => {
-      const next = new Set(prev);
-      if (next.has(countryId)) {
-        next.delete(countryId);
-      } else {
-        next.add(countryId);
+  const persistVisited = useCallback(
+    async (visitedCountries: string[]) => {
+      if (!token) {
+        return;
       }
-      return next;
-    });
-  }, []);
+
+      const requestId = ++syncRequestId.current;
+
+      try {
+        const response = await api.updateVisitedCountries(token, visitedCountries);
+
+        if (requestId === syncRequestId.current) {
+          updateUserVisitedCountries(response.visitedCountries);
+        }
+      } catch (error) {
+        console.error('Failed to sync visited countries:', error);
+      }
+    },
+    [token, updateUserVisitedCountries],
+  );
+
+  const toggle = useCallback(
+    (countryId: string) => {
+      if (user && token) {
+        const next = new Set(user.visitedCountries);
+
+        if (next.has(countryId)) {
+          next.delete(countryId);
+        } else {
+          next.add(countryId);
+        }
+
+        updateUserVisitedCountries([...next]);
+        void persistVisited([...next]);
+        return;
+      }
+
+      setGuestVisited((prev) => {
+        const next = new Set(prev);
+
+        if (next.has(countryId)) {
+          next.delete(countryId);
+        } else {
+          next.add(countryId);
+        }
+
+        return next;
+      });
+    },
+    [user, token, persistVisited, updateUserVisitedCountries],
+  );
 
   const isVisited = useCallback(
     (countryId: string) => visited.has(countryId),

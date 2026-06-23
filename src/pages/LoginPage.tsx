@@ -1,14 +1,16 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { AuthButton } from '../components/AuthButton';
+import { useAuth } from '../hooks/useAuth';
 import './LoginPage.css';
 
 const LOGO_URL = '/travel-tracker-logo.png';
 
 export function LoginPage() {
   const navigate = useNavigate();
+  const { enterGuestMode } = useAuth();
 
   const handleGuest = () => {
-    sessionStorage.setItem('guestMode', 'true');
+    enterGuestMode();
     navigate('/map');
   };
 
@@ -27,11 +29,13 @@ export function LoginPage() {
           <AuthButton variant="guest" onClick={handleGuest}>
             Use as guest
           </AuthButton>
-          <AuthButton variant="login" disabled comingSoon>
+          <AuthButton variant="login" onClick={() => navigate('/login')}>
             Log in
           </AuthButton>
         </div>
-        <p className="login-page__create-account">Create an account</p>
+        <Link className="login-page__create-account" to="/signup">
+          Create an account
+        </Link>
       </div>
     </div>
   );

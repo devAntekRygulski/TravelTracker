@@ -43,3 +43,7 @@
   min-height: 0;
   overflow: hidden;
 }
+
+.map-page--loading {
+  background-color: var(--bg-primary);
+}

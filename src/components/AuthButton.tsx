@@ -7,6 +7,7 @@ interface AuthButtonProps {
   onClick?: () => void;
   disabled?: boolean;
   comingSoon?: boolean;
+  type?: 'button' | 'submit';
 }
 
 export function AuthButton({
@@ -15,10 +16,11 @@ export function AuthButton({
   onClick,
   disabled = false,
   comingSoon = false,
+  type = 'button',
 }: AuthButtonProps) {
   return (
     <button
-      type="button"
+      type={type}
       className={`auth-button auth-button--${variant}`}
       onClick={onClick}
       disabled={disabled}

@@ -51,4 +51,10 @@
   font-size: 0.875rem;
   color: #9a9a9a;
   text-align: center;
+  text-decoration: none;
+}
+
+.login-page__create-account:hover {
+  color: var(--text-primary);
+  text-decoration: none;
 }
