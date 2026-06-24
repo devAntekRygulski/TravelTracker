@@ -17,6 +17,16 @@ const cached: MongooseCache = mongooseCache.mongooseCache ?? {
 
 mongooseCache.mongooseCache = cached;
 
+function resetCache() {
+  cached.conn = null;
+  cached.promise = null;
+}
+
+if (!mongoose.connection.listeners('disconnected').length) {
+  mongoose.connection.on('disconnected', resetCache);
+  mongoose.connection.on('error', resetCache);
+}
+
 function configureDnsForMongoSrv() {
   // Node on Windows can fail SRV lookups that work in nslookup.
   // Use public DNS servers so mongodb+srv URIs resolve reliably in dev.
@@ -30,9 +40,11 @@ export async function connectDB(): Promise<typeof mongoose> {
     throw new Error('MONGODB_URI is not defined');
   }
 
-  if (cached.conn) {
+  if (cached.conn && mongoose.connection.readyState === 1) {
     return cached.conn;
   }
+
+  resetCache();
 
   if (!cached.promise) {
     if (uri.startsWith('mongodb+srv://')) {
@@ -44,6 +56,11 @@ export async function connectDB(): Promise<typeof mongoose> {
     });
   }
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  try {
+    cached.conn = await cached.promise;
+    return cached.conn;
+  } catch (error) {
+    resetCache();
+    throw error;
+  }
 }

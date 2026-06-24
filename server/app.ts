@@ -25,5 +25,27 @@ export function createApp(): Express {
     res.status(404).json({ message: 'Route not found' });
   });
 
+  app.use(
+    (
+      error: unknown,
+      _req: express.Request,
+      res: express.Response,
+      next: express.NextFunction,
+    ) => {
+      if (res.headersSent) {
+        next(error);
+        return;
+      }
+
+      if (error instanceof SyntaxError) {
+        res.status(400).json({ message: 'Invalid request body' });
+        return;
+      }
+
+      console.error('Unhandled API error:', error);
+      res.status(500).json({ message: 'Internal server error' });
+    },
+  );
+
   return app;
 }

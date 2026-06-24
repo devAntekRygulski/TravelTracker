@@ -1,11 +1,13 @@
 .auth-button {
   position: relative;
+  display: block;
   width: 100%;
   max-width: 280px;
+  margin-inline: auto;
   padding: 1rem 2rem;
   font-size: 1.1rem;
   font-weight: 600;
-  border-radius: 8px;
+  border-radius: 9999px;
   transition: transform 0.15s ease, opacity 0.15s ease, box-shadow 0.15s ease;
 }
 
@@ -34,7 +36,7 @@
 }
 
 .auth-button--guest {
-  background-color: var(--bg-dark);
+  background-color: var(--bg-primary);
   color: var(--yellow-bright);
   border: 2px solid var(--yellow-bright);
 }

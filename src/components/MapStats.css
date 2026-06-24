@@ -19,14 +19,18 @@
 }
 
 .map-stats__value {
-  display: block;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
   width: 100%;
-  font-family: 'Montserrat', sans-serif;
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--yellow-bright);
-  text-align: center;
+  min-height: 1.5rem;
+}
+
+.map-stats__digit {
+  display: block;
+  height: 1.5rem;
+  width: auto;
 }
 
 .map-stats__label {

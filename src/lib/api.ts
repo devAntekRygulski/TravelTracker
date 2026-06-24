@@ -23,6 +23,27 @@ interface ApiError {
 
 const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
 
+function getErrorMessage(data: unknown, response: Response, rawBody: string): string {
+  if (
+    typeof data === 'object' &&
+    data !== null &&
+    'message' in data &&
+    typeof (data as ApiError).message === 'string'
+  ) {
+    return (data as ApiError).message;
+  }
+
+  if (response.status === 502 || response.status === 503 || response.status === 504) {
+    return 'Cannot reach the server. Run npm run dev and make sure the API is running on port 3001.';
+  }
+
+  if (rawBody.includes('ECONNREFUSED') || rawBody.includes('proxy error')) {
+    return 'Cannot reach the server. Run npm run dev and make sure the API is running on port 3001.';
+  }
+
+  return 'Something went wrong. Check that npm run dev is running and try again.';
+}
+
 async function request<T>(
   path: string,
   options: RequestInit = {},
@@ -38,22 +59,37 @@ async function request<T>(
     headers.set('Authorization', `Bearer ${token}`);
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...options,
-    headers,
-  });
+  let response: Response;
 
-  const data: unknown = await response.json().catch(() => null);
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...options,
+      headers,
+    });
+  } catch {
+    throw new Error(
+      'Cannot reach the server. Run npm run dev and make sure the API is running on port 3001.',
+    );
+  }
+
+  const contentType = response.headers.get('content-type') ?? '';
+  const rawBody = await response.text();
+  let data: unknown = null;
+
+  if (contentType.includes('application/json') && rawBody) {
+    try {
+      data = JSON.parse(rawBody);
+    } catch {
+      data = null;
+    }
+  }
 
   if (!response.ok) {
-    const message =
-      typeof data === 'object' &&
-      data !== null &&
-      'message' in data &&
-      typeof (data as ApiError).message === 'string'
-        ? (data as ApiError).message
-        : 'Something went wrong';
-    throw new Error(message);
+    throw new Error(getErrorMessage(data, response, rawBody));
+  }
+
+  if (data === null) {
+    throw new Error('Unexpected response from server.');
   }
 
   return data as T;
