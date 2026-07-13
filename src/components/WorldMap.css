@@ -4,6 +4,13 @@
   flex: 1;
   min-height: 0;
   overflow: hidden;
+  touch-action: none;
+  overscroll-behavior: contain;
+  cursor: grab;
+}
+
+.world-map:active {
+  cursor: grabbing;
 }
 
 .world-map svg {

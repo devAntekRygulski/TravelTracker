@@ -3,7 +3,7 @@ import { geoCentroid, geoMercator, type GeoProjection } from 'd3-geo';
 import { feature } from 'topojson-client';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { Topology } from 'topojson-specification';
-import { ComposableMap, Geographies, Geography } from 'react-simple-maps';
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
 import type { ProjectionFunction } from 'react-simple-maps';
 import './WorldMap.css';
 
@@ -34,6 +34,8 @@ const COUNTRY_GAP = 4;
 const BORDER_WIDTH = 0.3;
 const BORDER_WIDTH_ACTIVE = 0.45;
 const HOVER_SCALE = 1.08;
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 8;
 
 function getHoverTransform(
   geo: Feature<Geometry>,
@@ -192,7 +194,8 @@ export function WorldMap({ isVisited, onToggle }: WorldMapProps) {
         height={dimensions.height}
         style={{ width: '100%', height: '100%' }}
       >
-        <Geographies geography={topology}>
+        <ZoomableGroup minZoom={MIN_ZOOM} maxZoom={MAX_ZOOM}>
+          <Geographies geography={topology}>
           {({ geographies }) =>
             [...geographies]
               .sort((a, b) => {
@@ -246,6 +249,7 @@ export function WorldMap({ isVisited, onToggle }: WorldMapProps) {
             })
           }
         </Geographies>
+        </ZoomableGroup>
       </ComposableMap>
     </div>
   );
