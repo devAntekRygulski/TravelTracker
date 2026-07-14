@@ -38,6 +38,13 @@
   width: auto;
 }
 
+.map-stats__percent {
+  display: block;
+  height: 1.35rem;
+  width: auto;
+  margin-left: 0.05rem;
+}
+
 .map-stats__label {
   display: block;
   font-size: 0.875rem;

@@ -23,14 +23,13 @@ export function MapViewToggle({
       </button>
       <button
         type="button"
-        className={`map-view-toggle__option map-view-toggle__option--regional${
+        className={`map-view-toggle__option${
           regionalViewLocked ? ' map-view-toggle__option--active' : ''
         }`}
         aria-pressed={regionalViewLocked}
         onClick={() => onChange(true)}
       >
-        <span className="map-view-toggle__label">Regional</span>
-        <span className="map-view-toggle__beta">Beta</span>
+        Regional
       </button>
     </div>
   );
