@@ -24,6 +24,19 @@ export function getGuestVisitedCountries(): string[] {
   }
 }
 
+export function getGuestVisitedRegions(): string[] {
+  try {
+    const raw = localStorage.getItem('visitedRegions');
+    if (!raw) return [];
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return [];
+    return parsed.filter((id): id is string => typeof id === 'string');
+  } catch {
+    return [];
+  }
+}
+
 export function clearGuestVisitedCountries() {
   localStorage.removeItem('visitedCountries');
+  localStorage.removeItem('visitedRegions');
 }

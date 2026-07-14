@@ -2,6 +2,7 @@ export interface AuthUser {
   id: string;
   email: string;
   visitedCountries: string[];
+  visitedRegions: string[];
 }
 
 interface AuthResponse {
@@ -15,6 +16,10 @@ interface MeResponse {
 
 interface VisitedCountriesResponse {
   visitedCountries: string[];
+}
+
+interface VisitedRegionsResponse {
+  visitedRegions: string[];
 }
 
 interface ApiError {
@@ -96,10 +101,15 @@ async function request<T>(
 }
 
 export const api = {
-  register(email: string, password: string, visitedCountries: string[] = []) {
+  register(
+    email: string,
+    password: string,
+    visitedCountries: string[] = [],
+    visitedRegions: string[] = [],
+  ) {
     return request<AuthResponse>('/auth/register', {
       method: 'POST',
-      body: JSON.stringify({ email, password, visitedCountries }),
+      body: JSON.stringify({ email, password, visitedCountries, visitedRegions }),
     });
   },
 
@@ -122,6 +132,13 @@ export const api = {
     return request<VisitedCountriesResponse>('/visited-countries', {
       method: 'PUT',
       body: JSON.stringify({ visitedCountries }),
+    }, token);
+  },
+
+  updateVisitedRegions(token: string, visitedRegions: string[]) {
+    return request<VisitedRegionsResponse>('/visited-regions', {
+      method: 'PUT',
+      body: JSON.stringify({ visitedRegions }),
     }, token);
   },
 };

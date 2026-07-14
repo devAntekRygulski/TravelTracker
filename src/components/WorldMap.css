@@ -7,6 +7,8 @@
   touch-action: none;
   overscroll-behavior: contain;
   cursor: grab;
+  position: relative;
+  contain: layout paint style;
 }
 
 .world-map:active {
@@ -23,6 +25,53 @@
   paint-order: stroke fill;
 }
 
-.world-map__country {
+.world-map__country,
+.world-map__region {
   transition: transform 0.18s ease;
+}
+
+.world-map__overlays {
+  pointer-events: none;
+}
+
+.world-map__overlays path {
+  shape-rendering: optimizeSpeed;
+}
+
+.world-map__overlays circle {
+  shape-rendering: geometricPrecision;
+  pointer-events: none;
+}
+
+.world-map__loading-screen {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.85rem;
+  background: #2a2a2a;
+}
+
+.world-map__spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 2px solid #4a4a4a;
+  border-top-color: #f5c518;
+  border-radius: 50%;
+  animation: world-map-spin 0.7s linear infinite;
+}
+
+.world-map__loading-label {
+  margin: 0;
+  color: #9a9a9a;
+  font-size: 0.85rem;
+}
+
+@keyframes world-map-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }

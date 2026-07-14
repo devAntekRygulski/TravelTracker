@@ -9,6 +9,7 @@ import { api } from '../lib/api';
 import {
   clearGuestVisitedCountries,
   getGuestVisitedCountries,
+  getGuestVisitedRegions,
   getStoredToken,
   setStoredToken,
 } from '../lib/authStorage';
@@ -79,10 +80,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const register = useCallback(async (email: string, password: string) => {
     const guestCountries = getGuestVisitedCountries();
+    const guestRegions = getGuestVisitedRegions();
     const { token: nextToken, user: nextUser } = await api.register(
       email,
       password,
       guestCountries,
+      guestRegions,
     );
 
     setStoredToken(nextToken);
@@ -116,6 +119,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
+  const updateUserVisitedRegions = useCallback((visitedRegions: string[]) => {
+    setUser((current) =>
+      current ? { ...current, visitedRegions } : current,
+    );
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       user,
@@ -127,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       enterGuestMode,
       updateUserVisitedCountries,
+      updateUserVisitedRegions,
     }),
     [
       user,
@@ -138,6 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       logout,
       enterGuestMode,
       updateUserVisitedCountries,
+      updateUserVisitedRegions,
     ],
   );
 

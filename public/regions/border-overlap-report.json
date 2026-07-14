@@ -1,0 +1,1644 @@
+{
+  "regionBoundaryOverlaps": 218,
+  "regionOverlapPairs": 146,
+  "meshOverlaps": 2,
+  "meshOverlapPairs": 1,
+  "affectedRegions": [
+    "SYR-5261",
+    "POL-3139",
+    "POL-3150",
+    "DEU-1576",
+    "DEU-1579",
+    "RUS:Russia:Northern",
+    "KWT-1667",
+    "MYS-1187",
+    "MMR-3273",
+    "BGD-2476",
+    "DEU-3488",
+    "RUS:Russia:Far Eastern",
+    "CHN:China:South Central China",
+    "USA-3519",
+    "CAN-633",
+    "CAN-683",
+    "CRI-1330",
+    "CHL-2691",
+    "CHL-2692",
+    "IDN:cluster:19",
+    "GMB-2154",
+    "GMB-5513",
+    "ERI-1562",
+    "USA-3563",
+    "SYR-145",
+    "GBR:Wales:West Wales and the Valleys",
+    "GBR:England:West Midlands",
+    "GBR:England:South West",
+    "AUS-2657",
+    "IDN:cluster:18",
+    "IDN:cluster:1",
+    "PHL:Philippines:Eastern Visayas (Region VIII)",
+    "SUR-73",
+    "SUR-71",
+    "CHN:China",
+    "YEM-3510",
+    "YEM-157",
+    "USA-3557",
+    "USA-3552",
+    "USA-3558",
+    "USA-3555",
+    "EGY:cluster:11",
+    "CAN-634",
+    "CAN-686",
+    "BGD-2475",
+    "MMR-3275",
+    "PRK-3304",
+    "PRK-3313",
+    "KOR-2499",
+    "KOR-2502",
+    "CAN-635",
+    "NOR-922",
+    "NOR-912",
+    "NOR-913",
+    "GRC-2989",
+    "PRT-746",
+    "PRT-5498",
+    "GRL-2742",
+    "GRL-2743",
+    "GRL-2741",
+    "GRL-2740",
+    "FRO-1443",
+    "PNG-1251"
+  ],
+  "renderClean": false,
+  "geometryClean": false,
+  "clean": false,
+  "guarantee": "Rendered border overlaps remain",
+  "overlapRepairPasses": 0,
+  "droppedRegions": 337,
+  "renderedBorderSegmentCount": 17494,
+  "renderedOverlapZero": 17492,
+  "renderedOverlapOne": 2,
+  "renderedOverlaps": 2,
+  "geometryOverlaps": 218,
+  "overlappingRenderedSegments": [
+    {
+      "id": 12879,
+      "meshLineIndex": 1305,
+      "segIndex": 8,
+      "overlap": 1,
+      "coordinates": [
+        [
+          -3.051,
+          51.9838
+        ],
+        [
+          -2.6478,
+          51.8205
+        ]
+      ]
+    },
+    {
+      "id": 12881,
+      "meshLineIndex": 1305,
+      "segIndex": 10,
+      "overlap": 1,
+      "coordinates": [
+        [
+          -2.6478,
+          51.8223
+        ],
+        [
+          -2.6658,
+          51.6174
+        ]
+      ]
+    }
+  ],
+  "overlappingGeometrySegments": [
+    {
+      "id": 1972,
+      "regionId": "SYR-5261",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 1973,
+      "regionId": "SYR-5261",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 1978,
+      "regionId": "SYR-5261",
+      "ringIndex": 0,
+      "segIndex": 6,
+      "overlap": 1
+    },
+    {
+      "id": 8476,
+      "regionId": "DEU-1579",
+      "ringIndex": 0,
+      "segIndex": 18,
+      "overlap": 1
+    },
+    {
+      "id": 11041,
+      "regionId": "POL-3150",
+      "ringIndex": 0,
+      "segIndex": 19,
+      "overlap": 1
+    },
+    {
+      "id": 11044,
+      "regionId": "POL-3139",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 11062,
+      "regionId": "POL-3139",
+      "ringIndex": 0,
+      "segIndex": 19,
+      "overlap": 1
+    },
+    {
+      "id": 11129,
+      "regionId": "DEU-1576",
+      "ringIndex": 0,
+      "segIndex": 14,
+      "overlap": 1
+    },
+    {
+      "id": 11130,
+      "regionId": "DEU-1576",
+      "ringIndex": 0,
+      "segIndex": 15,
+      "overlap": 1
+    },
+    {
+      "id": 11983,
+      "regionId": "RUS:Russia:Northern",
+      "ringIndex": 4,
+      "segIndex": 12,
+      "overlap": 1
+    },
+    {
+      "id": 11984,
+      "regionId": "RUS:Russia:Northern",
+      "ringIndex": 4,
+      "segIndex": 13,
+      "overlap": 1
+    },
+    {
+      "id": 12031,
+      "regionId": "RUS:Russia:Northern",
+      "ringIndex": 5,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 12121,
+      "regionId": "RUS:Russia:Northern",
+      "ringIndex": 5,
+      "segIndex": 91,
+      "overlap": 1
+    },
+    {
+      "id": 12143,
+      "regionId": "RUS:Russia:Northern",
+      "ringIndex": 5,
+      "segIndex": 113,
+      "overlap": 1
+    },
+    {
+      "id": 14369,
+      "regionId": "KWT-1667",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 14385,
+      "regionId": "KWT-1667",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 14386,
+      "regionId": "KWT-1667",
+      "ringIndex": 1,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 14603,
+      "regionId": "MYS-1187",
+      "ringIndex": 0,
+      "segIndex": 42,
+      "overlap": 1
+    },
+    {
+      "id": 14624,
+      "regionId": "MYS-1187",
+      "ringIndex": 1,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 14626,
+      "regionId": "MYS-1187",
+      "ringIndex": 1,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 15100,
+      "regionId": "MMR-3273",
+      "ringIndex": 0,
+      "segIndex": 27,
+      "overlap": 1
+    },
+    {
+      "id": 15121,
+      "regionId": "MMR-3273",
+      "ringIndex": 2,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 15123,
+      "regionId": "MMR-3273",
+      "ringIndex": 2,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 15129,
+      "regionId": "BGD-2476",
+      "ringIndex": 0,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 15156,
+      "regionId": "BGD-2476",
+      "ringIndex": 1,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 15157,
+      "regionId": "BGD-2476",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 18070,
+      "regionId": "DEU-3488",
+      "ringIndex": 0,
+      "segIndex": 26,
+      "overlap": 1
+    },
+    {
+      "id": 18076,
+      "regionId": "DEU-3488",
+      "ringIndex": 1,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 18077,
+      "regionId": "DEU-3488",
+      "ringIndex": 1,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 21028,
+      "regionId": "RUS:Russia:Far Eastern",
+      "ringIndex": 0,
+      "segIndex": 216,
+      "overlap": 1
+    },
+    {
+      "id": 22008,
+      "regionId": "RUS:Russia:Far Eastern",
+      "ringIndex": 18,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 22009,
+      "regionId": "RUS:Russia:Far Eastern",
+      "ringIndex": 18,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 27514,
+      "regionId": "CHN:China:South Central China",
+      "ringIndex": 0,
+      "segIndex": 127,
+      "overlap": 1
+    },
+    {
+      "id": 27656,
+      "regionId": "CHN:China:South Central China",
+      "ringIndex": 2,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 27657,
+      "regionId": "CHN:China:South Central China",
+      "ringIndex": 2,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 27978,
+      "regionId": "USA-3519",
+      "ringIndex": 0,
+      "segIndex": 33,
+      "overlap": 1
+    },
+    {
+      "id": 27979,
+      "regionId": "USA-3519",
+      "ringIndex": 0,
+      "segIndex": 34,
+      "overlap": 1
+    },
+    {
+      "id": 27981,
+      "regionId": "USA-3519",
+      "ringIndex": 0,
+      "segIndex": 36,
+      "overlap": 1
+    },
+    {
+      "id": 28039,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 39,
+      "overlap": 1
+    },
+    {
+      "id": 28040,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 40,
+      "overlap": 1
+    },
+    {
+      "id": 28042,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 42,
+      "overlap": 1
+    },
+    {
+      "id": 28045,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 45,
+      "overlap": 1
+    },
+    {
+      "id": 28047,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 47,
+      "overlap": 1
+    },
+    {
+      "id": 28056,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 56,
+      "overlap": 1
+    },
+    {
+      "id": 28057,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 57,
+      "overlap": 1
+    },
+    {
+      "id": 28058,
+      "regionId": "CAN-633",
+      "ringIndex": 0,
+      "segIndex": 58,
+      "overlap": 1
+    },
+    {
+      "id": 28158,
+      "regionId": "CAN-633",
+      "ringIndex": 3,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 28160,
+      "regionId": "CAN-633",
+      "ringIndex": 3,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 28161,
+      "regionId": "CAN-633",
+      "ringIndex": 3,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 28163,
+      "regionId": "CAN-633",
+      "ringIndex": 3,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 28197,
+      "regionId": "CAN-633",
+      "ringIndex": 9,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 28198,
+      "regionId": "CAN-633",
+      "ringIndex": 9,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 28204,
+      "regionId": "CAN-633",
+      "ringIndex": 11,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 28205,
+      "regionId": "CAN-633",
+      "ringIndex": 11,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 28206,
+      "regionId": "CAN-633",
+      "ringIndex": 11,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 28214,
+      "regionId": "CAN-633",
+      "ringIndex": 13,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 28215,
+      "regionId": "CAN-633",
+      "ringIndex": 13,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 28216,
+      "regionId": "CAN-633",
+      "ringIndex": 14,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 28217,
+      "regionId": "CAN-633",
+      "ringIndex": 14,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 28223,
+      "regionId": "CAN-633",
+      "ringIndex": 15,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 28804,
+      "regionId": "CAN-683",
+      "ringIndex": 0,
+      "segIndex": 6,
+      "overlap": 1
+    },
+    {
+      "id": 28805,
+      "regionId": "CAN-683",
+      "ringIndex": 0,
+      "segIndex": 7,
+      "overlap": 1
+    },
+    {
+      "id": 28806,
+      "regionId": "CAN-683",
+      "ringIndex": 0,
+      "segIndex": 8,
+      "overlap": 1
+    },
+    {
+      "id": 28807,
+      "regionId": "CAN-683",
+      "ringIndex": 0,
+      "segIndex": 9,
+      "overlap": 1
+    },
+    {
+      "id": 28809,
+      "regionId": "CAN-683",
+      "ringIndex": 0,
+      "segIndex": 11,
+      "overlap": 1
+    },
+    {
+      "id": 29124,
+      "regionId": "CAN-683",
+      "ringIndex": 1,
+      "segIndex": 271,
+      "overlap": 1
+    },
+    {
+      "id": 29125,
+      "regionId": "CAN-683",
+      "ringIndex": 1,
+      "segIndex": 272,
+      "overlap": 1
+    },
+    {
+      "id": 29127,
+      "regionId": "CAN-683",
+      "ringIndex": 1,
+      "segIndex": 274,
+      "overlap": 1
+    },
+    {
+      "id": 29128,
+      "regionId": "CAN-683",
+      "ringIndex": 1,
+      "segIndex": 275,
+      "overlap": 1
+    },
+    {
+      "id": 29130,
+      "regionId": "CAN-683",
+      "ringIndex": 1,
+      "segIndex": 277,
+      "overlap": 1
+    },
+    {
+      "id": 29131,
+      "regionId": "CAN-683",
+      "ringIndex": 1,
+      "segIndex": 278,
+      "overlap": 1
+    },
+    {
+      "id": 30180,
+      "regionId": "CRI-1330",
+      "ringIndex": 0,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 30182,
+      "regionId": "CRI-1330",
+      "ringIndex": 0,
+      "segIndex": 6,
+      "overlap": 1
+    },
+    {
+      "id": 31854,
+      "regionId": "CHL-2691",
+      "ringIndex": 0,
+      "segIndex": 32,
+      "overlap": 1
+    },
+    {
+      "id": 31860,
+      "regionId": "CHL-2691",
+      "ringIndex": 0,
+      "segIndex": 38,
+      "overlap": 1
+    },
+    {
+      "id": 31955,
+      "regionId": "CHL-2691",
+      "ringIndex": 9,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 31956,
+      "regionId": "CHL-2691",
+      "ringIndex": 9,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 31971,
+      "regionId": "CHL-2691",
+      "ringIndex": 14,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 31972,
+      "regionId": "CHL-2691",
+      "ringIndex": 14,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 31982,
+      "regionId": "CHL-2691",
+      "ringIndex": 17,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 32115,
+      "regionId": "CHL-2692",
+      "ringIndex": 0,
+      "segIndex": 33,
+      "overlap": 1
+    },
+    {
+      "id": 32116,
+      "regionId": "CHL-2692",
+      "ringIndex": 0,
+      "segIndex": 34,
+      "overlap": 1
+    },
+    {
+      "id": 32128,
+      "regionId": "CHL-2692",
+      "ringIndex": 0,
+      "segIndex": 46,
+      "overlap": 1
+    },
+    {
+      "id": 32204,
+      "regionId": "CHL-2692",
+      "ringIndex": 0,
+      "segIndex": 122,
+      "overlap": 1
+    },
+    {
+      "id": 32319,
+      "regionId": "CHL-2692",
+      "ringIndex": 12,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 32320,
+      "regionId": "CHL-2692",
+      "ringIndex": 12,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 32329,
+      "regionId": "CHL-2692",
+      "ringIndex": 13,
+      "segIndex": 7,
+      "overlap": 1
+    },
+    {
+      "id": 32742,
+      "regionId": "IDN:cluster:19",
+      "ringIndex": 0,
+      "segIndex": 13,
+      "overlap": 1
+    },
+    {
+      "id": 32743,
+      "regionId": "IDN:cluster:19",
+      "ringIndex": 0,
+      "segIndex": 14,
+      "overlap": 1
+    },
+    {
+      "id": 32789,
+      "regionId": "IDN:cluster:19",
+      "ringIndex": 2,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 32790,
+      "regionId": "IDN:cluster:19",
+      "ringIndex": 2,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 32791,
+      "regionId": "IDN:cluster:19",
+      "ringIndex": 2,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 32792,
+      "regionId": "IDN:cluster:19",
+      "ringIndex": 2,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 37713,
+      "regionId": "GMB-5513",
+      "ringIndex": 0,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 37741,
+      "regionId": "GMB-2154",
+      "ringIndex": 0,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 37742,
+      "regionId": "GMB-2154",
+      "ringIndex": 0,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 38492,
+      "regionId": "ERI-1562",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 38494,
+      "regionId": "ERI-1562",
+      "ringIndex": 1,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 38495,
+      "regionId": "ERI-1562",
+      "ringIndex": 1,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 39051,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 56,
+      "overlap": 1
+    },
+    {
+      "id": 39052,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 57,
+      "overlap": 1
+    },
+    {
+      "id": 39310,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 315,
+      "overlap": 1
+    },
+    {
+      "id": 39311,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 316,
+      "overlap": 1
+    },
+    {
+      "id": 39322,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 327,
+      "overlap": 1
+    },
+    {
+      "id": 39453,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 458,
+      "overlap": 1
+    },
+    {
+      "id": 39454,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 459,
+      "overlap": 1
+    },
+    {
+      "id": 39456,
+      "regionId": "USA-3563",
+      "ringIndex": 0,
+      "segIndex": 461,
+      "overlap": 1
+    },
+    {
+      "id": 39575,
+      "regionId": "USA-3563",
+      "ringIndex": 10,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 39579,
+      "regionId": "USA-3563",
+      "ringIndex": 12,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 39582,
+      "regionId": "USA-3563",
+      "ringIndex": 12,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 39598,
+      "regionId": "USA-3563",
+      "ringIndex": 14,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 39599,
+      "regionId": "USA-3563",
+      "ringIndex": 14,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 40174,
+      "regionId": "SYR-145",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 40763,
+      "regionId": "GBR:Wales:West Wales and the Valleys",
+      "ringIndex": 0,
+      "segIndex": 8,
+      "overlap": 1
+    },
+    {
+      "id": 40765,
+      "regionId": "GBR:Wales:West Wales and the Valleys",
+      "ringIndex": 0,
+      "segIndex": 10,
+      "overlap": 1
+    },
+    {
+      "id": 40854,
+      "regionId": "GBR:England:West Midlands",
+      "ringIndex": 0,
+      "segIndex": 14,
+      "overlap": 1
+    },
+    {
+      "id": 40901,
+      "regionId": "GBR:England:South West",
+      "ringIndex": 0,
+      "segIndex": 34,
+      "overlap": 1
+    },
+    {
+      "id": 44727,
+      "regionId": "AUS-2657",
+      "ringIndex": 0,
+      "segIndex": 58,
+      "overlap": 1
+    },
+    {
+      "id": 44817,
+      "regionId": "AUS-2657",
+      "ringIndex": 5,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 44818,
+      "regionId": "AUS-2657",
+      "ringIndex": 5,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 45352,
+      "regionId": "IDN:cluster:18",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 45353,
+      "regionId": "IDN:cluster:18",
+      "ringIndex": 0,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 45385,
+      "regionId": "IDN:cluster:18",
+      "ringIndex": 6,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 45386,
+      "regionId": "IDN:cluster:18",
+      "ringIndex": 6,
+      "segIndex": 6,
+      "overlap": 1
+    },
+    {
+      "id": 46227,
+      "regionId": "IDN:cluster:1",
+      "ringIndex": 0,
+      "segIndex": 38,
+      "overlap": 1
+    },
+    {
+      "id": 46264,
+      "regionId": "IDN:cluster:1",
+      "ringIndex": 6,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 46265,
+      "regionId": "IDN:cluster:1",
+      "ringIndex": 6,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 47227,
+      "regionId": "PHL:Philippines:Eastern Visayas (Region VIII)",
+      "ringIndex": 0,
+      "segIndex": 14,
+      "overlap": 1
+    },
+    {
+      "id": 47228,
+      "regionId": "PHL:Philippines:Eastern Visayas (Region VIII)",
+      "ringIndex": 0,
+      "segIndex": 15,
+      "overlap": 1
+    },
+    {
+      "id": 47241,
+      "regionId": "PHL:Philippines:Eastern Visayas (Region VIII)",
+      "ringIndex": 1,
+      "segIndex": 12,
+      "overlap": 1
+    },
+    {
+      "id": 47580,
+      "regionId": "SUR-71",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 47586,
+      "regionId": "SUR-73",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 48879,
+      "regionId": "CHN:China",
+      "ringIndex": 0,
+      "segIndex": 7,
+      "overlap": 1
+    },
+    {
+      "id": 48880,
+      "regionId": "CHN:China",
+      "ringIndex": 0,
+      "segIndex": 8,
+      "overlap": 1
+    },
+    {
+      "id": 48882,
+      "regionId": "CHN:China",
+      "ringIndex": 0,
+      "segIndex": 10,
+      "overlap": 1
+    },
+    {
+      "id": 49225,
+      "regionId": "YEM-157",
+      "ringIndex": 0,
+      "segIndex": 19,
+      "overlap": 1
+    },
+    {
+      "id": 49227,
+      "regionId": "YEM-3510",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 49229,
+      "regionId": "YEM-3510",
+      "ringIndex": 0,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 49872,
+      "regionId": "USA-3552",
+      "ringIndex": 0,
+      "segIndex": 32,
+      "overlap": 1
+    },
+    {
+      "id": 49873,
+      "regionId": "USA-3552",
+      "ringIndex": 0,
+      "segIndex": 33,
+      "overlap": 1
+    },
+    {
+      "id": 49875,
+      "regionId": "USA-3552",
+      "ringIndex": 0,
+      "segIndex": 35,
+      "overlap": 1
+    },
+    {
+      "id": 49927,
+      "regionId": "USA-3557",
+      "ringIndex": 0,
+      "segIndex": 19,
+      "overlap": 1
+    },
+    {
+      "id": 49928,
+      "regionId": "USA-3557",
+      "ringIndex": 0,
+      "segIndex": 20,
+      "overlap": 1
+    },
+    {
+      "id": 49929,
+      "regionId": "USA-3557",
+      "ringIndex": 0,
+      "segIndex": 21,
+      "overlap": 1
+    },
+    {
+      "id": 49955,
+      "regionId": "USA-3555",
+      "ringIndex": 0,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 49976,
+      "regionId": "USA-3558",
+      "ringIndex": 0,
+      "segIndex": 15,
+      "overlap": 1
+    },
+    {
+      "id": 49977,
+      "regionId": "USA-3558",
+      "ringIndex": 0,
+      "segIndex": 16,
+      "overlap": 1
+    },
+    {
+      "id": 50820,
+      "regionId": "EGY:cluster:11",
+      "ringIndex": 0,
+      "segIndex": 9,
+      "overlap": 1
+    },
+    {
+      "id": 50823,
+      "regionId": "EGY:cluster:11",
+      "ringIndex": 0,
+      "segIndex": 12,
+      "overlap": 1
+    },
+    {
+      "id": 50824,
+      "regionId": "EGY:cluster:11",
+      "ringIndex": 0,
+      "segIndex": 13,
+      "overlap": 1
+    },
+    {
+      "id": 51006,
+      "regionId": "KOR-2502",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 52054,
+      "regionId": "CAN-634",
+      "ringIndex": 11,
+      "segIndex": 202,
+      "overlap": 1
+    },
+    {
+      "id": 52055,
+      "regionId": "CAN-634",
+      "ringIndex": 11,
+      "segIndex": 203,
+      "overlap": 1
+    },
+    {
+      "id": 52058,
+      "regionId": "CAN-634",
+      "ringIndex": 11,
+      "segIndex": 206,
+      "overlap": 1
+    },
+    {
+      "id": 54039,
+      "regionId": "CAN-686",
+      "ringIndex": 0,
+      "segIndex": 65,
+      "overlap": 1
+    },
+    {
+      "id": 54052,
+      "regionId": "CAN-686",
+      "ringIndex": 0,
+      "segIndex": 78,
+      "overlap": 1
+    },
+    {
+      "id": 54053,
+      "regionId": "CAN-686",
+      "ringIndex": 0,
+      "segIndex": 79,
+      "overlap": 1
+    },
+    {
+      "id": 54055,
+      "regionId": "CAN-686",
+      "ringIndex": 0,
+      "segIndex": 81,
+      "overlap": 1
+    },
+    {
+      "id": 54194,
+      "regionId": "CAN-686",
+      "ringIndex": 2,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 54299,
+      "regionId": "CAN-686",
+      "ringIndex": 4,
+      "segIndex": 101,
+      "overlap": 1
+    },
+    {
+      "id": 54300,
+      "regionId": "CAN-686",
+      "ringIndex": 4,
+      "segIndex": 102,
+      "overlap": 1
+    },
+    {
+      "id": 54312,
+      "regionId": "CAN-686",
+      "ringIndex": 5,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 54313,
+      "regionId": "CAN-686",
+      "ringIndex": 5,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 54460,
+      "regionId": "BGD-2475",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 54478,
+      "regionId": "BGD-2475",
+      "ringIndex": 2,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 54479,
+      "regionId": "BGD-2475",
+      "ringIndex": 2,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 54489,
+      "regionId": "MMR-3275",
+      "ringIndex": 0,
+      "segIndex": 9,
+      "overlap": 1
+    },
+    {
+      "id": 54511,
+      "regionId": "MMR-3275",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 54513,
+      "regionId": "MMR-3275",
+      "ringIndex": 1,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 54682,
+      "regionId": "PRK-3313",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 54716,
+      "regionId": "PRK-3304",
+      "ringIndex": 0,
+      "segIndex": 8,
+      "overlap": 1
+    },
+    {
+      "id": 54717,
+      "regionId": "PRK-3304",
+      "ringIndex": 0,
+      "segIndex": 9,
+      "overlap": 1
+    },
+    {
+      "id": 54725,
+      "regionId": "KOR-2499",
+      "ringIndex": 0,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 55703,
+      "regionId": "CAN-635",
+      "ringIndex": 0,
+      "segIndex": 40,
+      "overlap": 1
+    },
+    {
+      "id": 55709,
+      "regionId": "CAN-635",
+      "ringIndex": 0,
+      "segIndex": 46,
+      "overlap": 1
+    },
+    {
+      "id": 55710,
+      "regionId": "CAN-635",
+      "ringIndex": 0,
+      "segIndex": 47,
+      "overlap": 1
+    },
+    {
+      "id": 56585,
+      "regionId": "NOR-922",
+      "ringIndex": 0,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 56587,
+      "regionId": "NOR-922",
+      "ringIndex": 0,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 56628,
+      "regionId": "NOR-912",
+      "ringIndex": 0,
+      "segIndex": 22,
+      "overlap": 1
+    },
+    {
+      "id": 56684,
+      "regionId": "NOR-913",
+      "ringIndex": 1,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 56685,
+      "regionId": "NOR-913",
+      "ringIndex": 1,
+      "segIndex": 6,
+      "overlap": 1
+    },
+    {
+      "id": 56687,
+      "regionId": "NOR-913",
+      "ringIndex": 1,
+      "segIndex": 8,
+      "overlap": 1
+    },
+    {
+      "id": 56697,
+      "regionId": "NOR-913",
+      "ringIndex": 1,
+      "segIndex": 18,
+      "overlap": 1
+    },
+    {
+      "id": 56698,
+      "regionId": "NOR-913",
+      "ringIndex": 1,
+      "segIndex": 19,
+      "overlap": 1
+    },
+    {
+      "id": 56729,
+      "regionId": "NOR-913",
+      "ringIndex": 5,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 56730,
+      "regionId": "NOR-913",
+      "ringIndex": 5,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 56731,
+      "regionId": "NOR-913",
+      "ringIndex": 5,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 57193,
+      "regionId": "GRC-2989",
+      "ringIndex": 0,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 57221,
+      "regionId": "GRC-2989",
+      "ringIndex": 2,
+      "segIndex": 4,
+      "overlap": 1
+    },
+    {
+      "id": 57222,
+      "regionId": "GRC-2989",
+      "ringIndex": 2,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 57618,
+      "regionId": "PRT-5498",
+      "ringIndex": 0,
+      "segIndex": 6,
+      "overlap": 1
+    },
+    {
+      "id": 57630,
+      "regionId": "PRT-746",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 57631,
+      "regionId": "PRT-746",
+      "ringIndex": 0,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 57635,
+      "regionId": "PRT-746",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 57636,
+      "regionId": "PRT-746",
+      "ringIndex": 1,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 58763,
+      "regionId": "GRL-2742",
+      "ringIndex": 4,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 58767,
+      "regionId": "GRL-2742",
+      "ringIndex": 5,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 58772,
+      "regionId": "GRL-2742",
+      "ringIndex": 5,
+      "segIndex": 5,
+      "overlap": 1
+    },
+    {
+      "id": 59063,
+      "regionId": "GRL-2743",
+      "ringIndex": 0,
+      "segIndex": 153,
+      "overlap": 1
+    },
+    {
+      "id": 59144,
+      "regionId": "GRL-2743",
+      "ringIndex": 0,
+      "segIndex": 234,
+      "overlap": 1
+    },
+    {
+      "id": 59149,
+      "regionId": "GRL-2743",
+      "ringIndex": 0,
+      "segIndex": 239,
+      "overlap": 1
+    },
+    {
+      "id": 59150,
+      "regionId": "GRL-2743",
+      "ringIndex": 0,
+      "segIndex": 240,
+      "overlap": 1
+    },
+    {
+      "id": 59247,
+      "regionId": "GRL-2743",
+      "ringIndex": 1,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 59248,
+      "regionId": "GRL-2743",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 59410,
+      "regionId": "GRL-2741",
+      "ringIndex": 0,
+      "segIndex": 58,
+      "overlap": 1
+    },
+    {
+      "id": 59413,
+      "regionId": "GRL-2741",
+      "ringIndex": 0,
+      "segIndex": 61,
+      "overlap": 1
+    },
+    {
+      "id": 59414,
+      "regionId": "GRL-2741",
+      "ringIndex": 0,
+      "segIndex": 62,
+      "overlap": 1
+    },
+    {
+      "id": 59471,
+      "regionId": "GRL-2740",
+      "ringIndex": 0,
+      "segIndex": 31,
+      "overlap": 1
+    },
+    {
+      "id": 59504,
+      "regionId": "GRL-2740",
+      "ringIndex": 0,
+      "segIndex": 64,
+      "overlap": 1
+    },
+    {
+      "id": 59511,
+      "regionId": "GRL-2740",
+      "ringIndex": 1,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 59512,
+      "regionId": "GRL-2740",
+      "ringIndex": 1,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 59535,
+      "regionId": "GRL-2740",
+      "ringIndex": 7,
+      "segIndex": 2,
+      "overlap": 1
+    },
+    {
+      "id": 59536,
+      "regionId": "GRL-2740",
+      "ringIndex": 7,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 61043,
+      "regionId": "FRO-1443",
+      "ringIndex": 2,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 61044,
+      "regionId": "FRO-1443",
+      "ringIndex": 2,
+      "segIndex": 1,
+      "overlap": 1
+    },
+    {
+      "id": 61049,
+      "regionId": "FRO-1443",
+      "ringIndex": 3,
+      "segIndex": 3,
+      "overlap": 1
+    },
+    {
+      "id": 61766,
+      "regionId": "PNG-1251",
+      "ringIndex": 0,
+      "segIndex": 0,
+      "overlap": 1
+    },
+    {
+      "id": 61771,
+      "regionId": "PNG-1251",
+      "ringIndex": 0,
+      "segIndex": 5,
+      "overlap": 1
+    }
+  ]
+}

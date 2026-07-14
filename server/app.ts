@@ -2,6 +2,7 @@ import cors from 'cors';
 import express, { type Express } from 'express';
 import authRoutes from './routes/auth.js';
 import visitedCountriesRoutes from './routes/visitedCountries.js';
+import visitedRegionsRoutes from './routes/visitedRegions.js';
 
 export function createApp(): Express {
   const app = express();
@@ -20,6 +21,7 @@ export function createApp(): Express {
 
   app.use('/api/auth', authRoutes);
   app.use('/api/visited-countries', visitedCountriesRoutes);
+  app.use('/api/visited-regions', visitedRegionsRoutes);
 
   app.use((_req, res) => {
     res.status(404).json({ message: 'Route not found' });

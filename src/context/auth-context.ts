@@ -11,6 +11,7 @@ export interface AuthContextValue {
   logout: () => void;
   enterGuestMode: () => void;
   updateUserVisitedCountries: (visitedCountries: string[]) => void;
+  updateUserVisitedRegions: (visitedRegions: string[]) => void;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);

@@ -1,8 +1,11 @@
 import './MapStats.css';
+import { MapViewToggle } from './MapViewToggle';
 
 interface MapStatsProps {
   countriesVisited: number;
   continentsVisited: number;
+  regionalViewLocked: boolean;
+  onRegionalViewChange: (regionalViewLocked: boolean) => void;
 }
 
 function StatNumber({ value }: { value: number }) {
@@ -23,7 +26,12 @@ function StatNumber({ value }: { value: number }) {
   );
 }
 
-export function MapStats({ countriesVisited, continentsVisited }: MapStatsProps) {
+export function MapStats({
+  countriesVisited,
+  continentsVisited,
+  regionalViewLocked,
+  onRegionalViewChange,
+}: MapStatsProps) {
   return (
     <aside className="map-stats" aria-label="Travel statistics">
       <div className="map-stats__item">
@@ -34,6 +42,10 @@ export function MapStats({ countriesVisited, continentsVisited }: MapStatsProps)
         <StatNumber value={continentsVisited} />
         <span className="map-stats__label">continents visited</span>
       </div>
+      <MapViewToggle
+        regionalViewLocked={regionalViewLocked}
+        onChange={onRegionalViewChange}
+      />
     </aside>
   );
 }

@@ -1,28 +1,39 @@
 .map-page {
-  display: flex;
-  flex-direction: column;
   height: 100%;
   background-color: var(--bg-primary);
 }
 
-.map-page__header {
+.map-page__main {
   position: relative;
   display: flex;
-  align-items: center;
+  height: 100%;
+  padding: 0 0.5rem 1rem;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.map-page__logo-wrap {
+  position: absolute;
+  top: 0.5rem;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: flex;
   justify-content: center;
-  padding: 0.5rem 1rem 0.35rem;
-  flex-shrink: 0;
+  pointer-events: none;
 }
 
 .map-page__logo {
   display: block;
-  width: min(100%, 110px);
+  width: 110px;
   height: auto;
 }
 
 .map-page__back {
   position: absolute;
+  top: 0.75rem;
   right: 2.5rem;
+  z-index: 1;
   font-size: 0.9rem;
   font-weight: 500;
   color: #9a9a9a;
@@ -33,15 +44,6 @@
 .map-page__back:hover {
   color: var(--text-primary);
   text-decoration: none;
-}
-
-.map-page__main {
-  flex: 1;
-  position: relative;
-  display: flex;
-  padding: 0.25rem 0.5rem 1rem;
-  min-height: 0;
-  overflow: hidden;
 }
 
 .map-page--loading {

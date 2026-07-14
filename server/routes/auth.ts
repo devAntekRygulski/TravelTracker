@@ -17,6 +17,9 @@ router.post('/register', async (req, res: Response) => {
     const visitedCountries = Array.isArray(req.body.visitedCountries)
       ? req.body.visitedCountries.filter((id: unknown): id is string => typeof id === 'string')
       : [];
+    const visitedRegions = Array.isArray(req.body.visitedRegions)
+      ? req.body.visitedRegions.filter((id: unknown): id is string => typeof id === 'string')
+      : [];
 
     if (!email || !password) {
       res.status(400).json({ message: 'Email and password are required' });
@@ -39,6 +42,7 @@ router.post('/register', async (req, res: Response) => {
       email,
       password,
       visitedCountries,
+      visitedRegions,
     });
 
     const token = signToken(String(user._id));
@@ -49,6 +53,7 @@ router.post('/register', async (req, res: Response) => {
         id: String(user._id),
         email: user.email,
         visitedCountries: user.visitedCountries,
+        visitedRegions: user.visitedRegions,
       },
     });
   } catch (error) {
@@ -88,6 +93,7 @@ router.post('/login', async (req, res: Response) => {
         id: String(user._id),
         email: user.email,
         visitedCountries: user.visitedCountries,
+        visitedRegions: user.visitedRegions,
       },
     });
   } catch (error) {
@@ -109,6 +115,7 @@ router.get('/me', requireAuth, async (req: AuthRequest, res: Response) => {
         id: String(user._id),
         email: user.email,
         visitedCountries: user.visitedCountries,
+        visitedRegions: user.visitedRegions,
       },
     });
   } catch (error) {

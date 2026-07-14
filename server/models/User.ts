@@ -5,6 +5,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   visitedCountries: string[];
+  visitedRegions: string[];
   comparePassword(candidate: string): Promise<boolean>;
 }
 
@@ -23,6 +24,10 @@ const userSchema = new Schema<IUser>(
       minlength: 6,
     },
     visitedCountries: {
+      type: [String],
+      default: [],
+    },
+    visitedRegions: {
       type: [String],
       default: [],
     },
