@@ -81,6 +81,26 @@ function zoomThresholdKey(zoom: number): string {
 }
 
 function geometryBBox(geometry: Geometry): RegionBBox | null {
+  if (geometry.type === 'GeometryCollection') {
+    let minLon = Infinity;
+    let minLat = Infinity;
+    let maxLon = -Infinity;
+    let maxLat = -Infinity;
+    let found = false;
+
+    for (const child of geometry.geometries) {
+      const box = geometryBBox(child);
+      if (!box) continue;
+      found = true;
+      if (box.minLon < minLon) minLon = box.minLon;
+      if (box.minLat < minLat) minLat = box.minLat;
+      if (box.maxLon > maxLon) maxLon = box.maxLon;
+      if (box.maxLat > maxLat) maxLat = box.maxLat;
+    }
+
+    return found ? { minLon, minLat, maxLon, maxLat } : null;
+  }
+
   let minLon = Infinity;
   let minLat = Infinity;
   let maxLon = -Infinity;
@@ -290,15 +310,17 @@ function filterTopology(topology: Topology): Topology {
     return topology;
   }
 
+  const geometries = countries.geometries.filter(
+    (geometry) => !EXCLUDED_COUNTRY_IDS.has(String(geometry.id)),
+  );
+
   return {
     ...topology,
     objects: {
       ...topology.objects,
       countries: {
-        ...countries,
-        geometries: countries.geometries.filter(
-          (geometry) => !EXCLUDED_COUNTRY_IDS.has(String(geometry.id)),
-        ),
+        type: 'GeometryCollection',
+        geometries,
       },
     },
   };
@@ -472,7 +494,10 @@ export function WorldMap({
       return null;
     }
 
-    const borderMesh = mesh(topology, countries) as MultiLineString;
+    const borderMesh = mesh(
+      topology,
+      countries as Parameters<typeof mesh>[1],
+    ) as MultiLineString;
     return pathGenerator(borderMesh);
   }, [topology, pathGenerator]);
 
