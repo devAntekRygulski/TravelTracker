@@ -19,7 +19,7 @@ export function MapViewToggle({
         aria-pressed={!regionalViewLocked}
         onClick={() => onChange(false)}
       >
-        Country
+        <span className="map-view-toggle__label">Country</span>
       </button>
       <button
         type="button"
@@ -29,7 +29,7 @@ export function MapViewToggle({
         aria-pressed={regionalViewLocked}
         onClick={() => onChange(true)}
       >
-        Regional
+        <span className="map-view-toggle__label">Regional</span>
       </button>
     </div>
   );
