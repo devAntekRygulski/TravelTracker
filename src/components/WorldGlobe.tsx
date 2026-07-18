@@ -123,9 +123,10 @@ function rotationFromDrag(
   const sensitivity = ROTATION_SENSITIVITY / Math.max(zoom, MIN_ZOOM);
   const dx = clientX - startX;
   const dy = clientY - startY;
+  // Drag direction matches spin direction (not grab-the-surface).
   return [
-    startRotation[0] - dx * sensitivity,
-    clampLatitude(startRotation[1] + dy * sensitivity),
+    startRotation[0] + dx * sensitivity,
+    clampLatitude(startRotation[1] - dy * sensitivity),
     startRotation[2],
   ];
 }
