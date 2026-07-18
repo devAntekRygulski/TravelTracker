@@ -1,26 +1,58 @@
 .map-stats {
   position: absolute;
-  left: 2.5rem;
-  top: 50%;
+  inset: 0;
   z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 1.75rem;
-  transform: translateY(-50%);
   pointer-events: none;
 }
 
-.map-stats .map-view-toggle {
+.map-stats__toggles {
+  position: absolute;
+  left: 2.5rem;
+  top: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.65rem;
+  width: 100%;
+  max-width: 180px;
+  transform: translateY(-50%);
   pointer-events: auto;
+}
+
+.map-stats__toggles .map-view-toggle {
+  width: 100%;
+  max-width: none;
+}
+
+.map-stats__counters {
+  position: absolute;
+  left: 50%;
+  bottom: 1.25rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 0.7rem 1.75rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 9999px;
+  background-color: rgba(26, 26, 26, 0.88);
+  transform: translateX(-50%);
+  backdrop-filter: blur(8px);
 }
 
 .map-stats__item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.15rem;
+  min-width: 7.5rem;
+  padding: 0.15rem 1.1rem;
   text-align: center;
+}
+
+.map-stats__item + .map-stats__item {
+  border-left: 1px solid #4a4a4a;
 }
 
 .map-stats__value {
@@ -29,26 +61,58 @@
   justify-content: center;
   gap: 0.1rem;
   width: 100%;
-  min-height: 1.5rem;
+  min-height: 1.35rem;
 }
 
 .map-stats__digit {
   display: block;
-  height: 1.5rem;
+  height: 1.35rem;
   width: auto;
 }
 
 .map-stats__percent {
   display: block;
-  height: 1.35rem;
+  height: 1.2rem;
   width: auto;
   margin-left: 0.05rem;
 }
 
 .map-stats__label {
   display: block;
-  font-size: 0.875rem;
-  line-height: 1.35;
+  font-size: 0.75rem;
+  line-height: 1.3;
   color: #9a9a9a;
   text-align: center;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .map-stats__counters {
+    left: 0.75rem;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    width: auto;
+    transform: none;
+    padding: 0.55rem 0.75rem;
+    gap: 0;
+  }
+
+  .map-stats__item {
+    min-width: 0;
+    flex: 1;
+    padding: 0.1rem 0.45rem;
+  }
+
+  .map-stats__label {
+    font-size: 0.65rem;
+    white-space: normal;
+  }
+
+  .map-stats__digit {
+    height: 1.15rem;
+  }
+
+  .map-stats__percent {
+    height: 1rem;
+  }
 }

@@ -1,5 +1,9 @@
 import { TOTAL_MAP_COUNTRIES } from '../data/mapCountries';
 import './MapStats.css';
+import {
+  MapProjectionToggle,
+  type MapProjectionMode,
+} from './MapProjectionToggle';
 import { MapViewToggle } from './MapViewToggle';
 
 interface MapStatsProps {
@@ -7,6 +11,8 @@ interface MapStatsProps {
   continentsVisited: number;
   regionalViewLocked: boolean;
   onRegionalViewChange: (regionalViewLocked: boolean) => void;
+  projectionMode: MapProjectionMode;
+  onProjectionModeChange: (mode: MapProjectionMode) => void;
 }
 
 function StatNumber({ value }: { value: number }) {
@@ -57,6 +63,8 @@ export function MapStats({
   continentsVisited,
   regionalViewLocked,
   onRegionalViewChange,
+  projectionMode,
+  onProjectionModeChange,
 }: MapStatsProps) {
   const percentVisited = Math.round(
     (countriesVisited / TOTAL_MAP_COUNTRIES) * 100,
@@ -64,22 +72,32 @@ export function MapStats({
 
   return (
     <aside className="map-stats" aria-label="Travel statistics">
-      <div className="map-stats__item">
-        <PercentStat value={percentVisited} />
-        <span className="map-stats__label">of countries visited</span>
+      <div className="map-stats__toggles">
+        <MapViewToggle
+          regionalViewLocked={regionalViewLocked}
+          onChange={onRegionalViewChange}
+          regionalDisabled={projectionMode === 'globe'}
+        />
+        <MapProjectionToggle
+          mode={projectionMode}
+          onChange={onProjectionModeChange}
+        />
       </div>
-      <div className="map-stats__item">
-        <StatNumber value={countriesVisited} />
-        <span className="map-stats__label">countries visited</span>
+
+      <div className="map-stats__counters">
+        <div className="map-stats__item">
+          <PercentStat value={percentVisited} />
+          <span className="map-stats__label">of countries visited</span>
+        </div>
+        <div className="map-stats__item">
+          <StatNumber value={countriesVisited} />
+          <span className="map-stats__label">countries visited</span>
+        </div>
+        <div className="map-stats__item">
+          <StatNumber value={continentsVisited} />
+          <span className="map-stats__label">continents visited</span>
+        </div>
       </div>
-      <div className="map-stats__item">
-        <StatNumber value={continentsVisited} />
-        <span className="map-stats__label">continents visited</span>
-      </div>
-      <MapViewToggle
-        regionalViewLocked={regionalViewLocked}
-        onChange={onRegionalViewChange}
-      />
     </aside>
   );
 }
