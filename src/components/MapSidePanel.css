@@ -16,11 +16,13 @@
   background: rgba(0, 0, 0, 0.45);
   opacity: 0;
   cursor: pointer;
+  pointer-events: none;
   transition: opacity 0.22s ease;
 }
 
 .map-side-panel--open .map-side-panel__backdrop {
   opacity: 1;
+  pointer-events: auto;
 }
 
 .map-side-panel__drawer {
@@ -37,10 +39,12 @@
   background-color: var(--bg-primary);
   transform: translateX(-105%);
   transition: transform 0.24s ease;
+  pointer-events: none;
 }
 
 .map-side-panel--open .map-side-panel__drawer {
   transform: translateX(0);
+  pointer-events: auto;
 }
 
 .map-side-panel__actions {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { MapBurgerButton } from '../components/MapBurgerButton';
 import { MapSidePanel } from '../components/MapSidePanel';
@@ -9,6 +9,7 @@ import type { MapProjectionMode } from '../components/MapProjectionToggle';
 import { useAuth } from '../hooks/useAuth';
 import { prefetchRegionMap } from '../hooks/useRegionGeoData';
 import { useVisitedCountries } from '../hooks/useVisitedCountries';
+import { downloadFlatMapPng } from '../lib/exportFlatMapPng';
 import './MapPage.css';
 
 const LOGO_URL = '/travel-tracker-logo.png';
@@ -24,12 +25,12 @@ export function MapPage() {
     count,
     continentCount,
     visited,
-    visitedRegions,
   } = useVisitedCountries();
   const [regionalViewLocked, setRegionalViewLocked] = useState(false);
   const [projectionMode, setProjectionMode] =
     useState<MapProjectionMode>('flat');
   const [menuOpen, setMenuOpen] = useState(false);
+  const switchAccountRef = useRef(false);
 
   useEffect(() => {
     prefetchRegionMap();
@@ -37,6 +38,12 @@ export function MapPage() {
 
   useEffect(() => {
     if (!isLoading && !user && !isGuest) {
+      // Switch account should land on the login form, not the landing page.
+      if (switchAccountRef.current) {
+        switchAccountRef.current = false;
+        navigate('/login', { replace: true });
+        return;
+      }
       navigate('/', { replace: true });
     }
   }, [isLoading, user, isGuest, navigate]);
@@ -58,8 +65,8 @@ export function MapPage() {
 
   const handleSwitchAccount = () => {
     setMenuOpen(false);
+    switchAccountRef.current = true;
     logout();
-    navigate('/login');
   };
 
   const handleProjectionModeChange = (mode: MapProjectionMode) => {
@@ -75,28 +82,19 @@ export function MapPage() {
       navigate('/login');
       return;
     }
-    // Account page not built yet — keep the entry point ready.
-    navigate('/');
+    navigate('/account');
   };
 
   const handleExport = () => {
-    const payload = {
-      exportedAt: new Date().toISOString(),
-      countriesVisited: count,
-      continentsVisited: continentCount,
-      visitedCountries: [...visited].sort(),
-      visitedRegions: [...visitedRegions].sort(),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], {
-      type: 'application/json',
-    });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'travel-tracker-export.json';
-    link.click();
-    URL.revokeObjectURL(url);
     setMenuOpen(false);
+    void downloadFlatMapPng(visited).catch((error) => {
+      console.error(error);
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : 'Failed to export map image.',
+      );
+    });
   };
 
   if (isLoading) {

@@ -57,7 +57,7 @@ export function MapSidePanel({
             tabIndex={open ? 0 : -1}
             onClick={onExport}
           >
-            Export
+            Export as PNG
           </button>
         </div>
       </nav>
