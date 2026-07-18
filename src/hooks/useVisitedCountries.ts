@@ -208,6 +208,7 @@ export function useVisitedCountries() {
 
   return {
     visited,
+    visitedRegions,
     count: visited.size,
     continentCount,
     toggle,

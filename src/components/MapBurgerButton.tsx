@@ -32,7 +32,12 @@ function paintBurger(
   ctx.fillRect(0, lineHeight * 2 + gap * 2, width, lineHeight);
 }
 
-export function MapBurgerButton() {
+interface MapBurgerButtonProps {
+  open?: boolean;
+  onClick?: () => void;
+}
+
+export function MapBurgerButton({ open = false, onClick }: MapBurgerButtonProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -71,7 +76,10 @@ export function MapBurgerButton() {
       ref={buttonRef}
       type="button"
       className="map-page__burger"
-      aria-label="Open menu"
+      aria-label={open ? 'Close menu' : 'Open menu'}
+      aria-expanded={open}
+      aria-controls="map-side-panel"
+      onClick={onClick}
     >
       <canvas ref={canvasRef} className="map-page__burger-canvas" aria-hidden="true" />
     </button>
