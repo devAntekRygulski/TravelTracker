@@ -3,11 +3,13 @@ import './MapViewToggle.css';
 interface MapViewToggleProps {
   regionalViewLocked: boolean;
   onChange: (regionalViewLocked: boolean) => void;
+  regionalDisabled?: boolean;
 }
 
 export function MapViewToggle({
   regionalViewLocked,
   onChange,
+  regionalDisabled = false,
 }: MapViewToggleProps) {
   return (
     <div className="map-view-toggle" role="group" aria-label="Map view mode">
@@ -27,6 +29,10 @@ export function MapViewToggle({
           regionalViewLocked ? ' map-view-toggle__option--active' : ''
         }`}
         aria-pressed={regionalViewLocked}
+        disabled={regionalDisabled}
+        title={
+          regionalDisabled ? 'Regional view is unavailable in globe mode' : undefined
+        }
         onClick={() => onChange(true)}
       >
         <span className="map-view-toggle__label">Regional</span>
