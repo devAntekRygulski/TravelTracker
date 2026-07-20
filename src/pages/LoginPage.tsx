@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthButton } from '../components/AuthButton';
+import { LandingMapBackdrop } from '../components/LandingMapBackdrop';
 import { useAuth } from '../hooks/useAuth';
 import './LoginPage.css';
 
@@ -16,6 +17,7 @@ export function LoginPage() {
 
   return (
     <div className="login-page">
+      <LandingMapBackdrop />
       <div className="login-page__content">
         <div className="login-page__logo-wrap">
           <img
