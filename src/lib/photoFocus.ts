@@ -1,0 +1,130 @@
+import {
+  geoCentroid,
+  geoPath,
+  type GeoProjection,
+} from 'd3-geo';
+import type { Feature, Geometry } from 'geojson';
+
+export const PHOTO_FOCUS_DURATION_MS = 1600;
+export const PHOTO_FOCUS_PAD = 28;
+
+export function easeInOutCubic(t: number): number {
+  const x = Math.min(1, Math.max(0, t));
+  return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+}
+
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t;
+}
+
+/** Shortest-path lerp for longitude degrees. */
+export function lerpLongitude(a: number, b: number, t: number): number {
+  let delta = ((((b - a) % 360) + 540) % 360) - 180;
+  return a + delta * t;
+}
+
+/** Keep a little air inside the safe rect so edges never kiss UI. */
+const FOCUS_FIT = 0.82;
+
+export type PhotoFocusSafeRect = {
+  left: number;
+  top: number;
+  width: number;
+  height: number;
+  centerX: number;
+  centerY: number;
+};
+
+/**
+ * Left-half region that stays clear of the header, back arrow, and
+ * bottom stats oval (which spans across the center).
+ */
+export function getPhotoFocusSafeRect(
+  viewportWidth: number,
+  viewportHeight: number,
+): PhotoFocusSafeRect {
+  // Burger (top 0.5rem + 32px) + larger gap + back arrow (40px) + breathing room
+  const topUi = 8 + 32 + 40 + 40 + 16;
+  const bottomUi = 120;
+  const leftUi = 28;
+  const midGap = 28;
+
+  const left = leftUi;
+  const top = topUi;
+  const right = viewportWidth * 0.5 - midGap;
+  const bottom = viewportHeight - bottomUi;
+
+  const width = Math.max(0, right - left);
+  const height = Math.max(0, bottom - top);
+
+  return {
+    left,
+    top,
+    width,
+    height,
+    centerX: left + width / 2,
+    centerY: top + height / 2,
+  };
+}
+
+export type PhotoFocusTransform = {
+  cx: number;
+  cy: number;
+  scale: number;
+  dx: number;
+  dy: number;
+  /** Country bounds top-left in projection space. */
+  x0: number;
+  y0: number;
+};
+
+/**
+ * Projection-space transform that places a country in the left half of the
+ * viewport after ZoomableGroup applies center/zoom.
+ */
+export function computeFlatPhotoFocusTransform(
+  geo: Feature<Geometry>,
+  projection: GeoProjection,
+  width: number,
+  height: number,
+  mapCenter: [number, number],
+  mapZoom: number,
+): PhotoFocusTransform | null {
+  const path = geoPath(projection);
+  const [[x0, y0], [x1, y1]] = path.bounds(geo);
+  const pw = x1 - x0;
+  const ph = y1 - y0;
+  if (!(pw > 0) || !(ph > 0)) return null;
+
+  const centroid = projection(geoCentroid(geo));
+  const centerProj = projection(mapCenter);
+  if (!centroid || !centerProj) return null;
+
+  const [pcx, pcy] = centroid;
+  const [cpx, cpy] = centerProj;
+  const zoom = Math.max(mapZoom, 0.001);
+
+  const safe = getPhotoFocusSafeRect(width, height);
+  if (!(safe.width > 0) || !(safe.height > 0)) return null;
+
+  const screenW = pw * zoom;
+  const screenH = ph * zoom;
+  const scale =
+    Math.min(safe.width / screenW, safe.height / screenH) * FOCUS_FIT;
+
+  const dx = (safe.centerX - width / 2) / zoom - (pcx - cpx);
+  const dy = (safe.centerY - height / 2) / zoom - (pcy - cpy);
+
+  return { cx: pcx, cy: pcy, scale, dx, dy, x0, y0 };
+}
+
+export function flatPhotoFocusTransformString(
+  focus: PhotoFocusTransform,
+  progress: number,
+): string {
+  const t = easeInOutCubic(progress);
+  const scale = lerp(1, focus.scale, t);
+  const dx = lerp(0, focus.dx, t);
+  const dy = lerp(0, focus.dy, t);
+  return `translate(${dx},${dy}) translate(${focus.cx},${focus.cy}) scale(${scale}) translate(${-focus.cx},${-focus.cy})`;
+}

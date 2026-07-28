@@ -30,6 +30,7 @@ export function MapPage() {
   const [projectionMode, setProjectionMode] =
     useState<MapProjectionMode>('flat');
   const [menuOpen, setMenuOpen] = useState(false);
+  const [photoFocusActive, setPhotoFocusActive] = useState(false);
   const switchAccountRef = useRef(false);
 
   useEffect(() => {
@@ -70,6 +71,7 @@ export function MapPage() {
   };
 
   const handleProjectionModeChange = (mode: MapProjectionMode) => {
+    setPhotoFocusActive(false);
     setProjectionMode(mode);
     if (mode === 'globe') {
       setRegionalViewLocked(false);
@@ -139,9 +141,14 @@ export function MapPage() {
           onRegionalViewChange={setRegionalViewLocked}
           projectionMode={projectionMode}
           onProjectionModeChange={handleProjectionModeChange}
+          hideToggles={photoFocusActive}
         />
         {projectionMode === 'globe' ? (
-          <WorldGlobe isVisited={isVisited} onToggle={toggle} />
+          <WorldGlobe
+            isVisited={isVisited}
+            onToggle={toggle}
+            onPhotoFocusChange={setPhotoFocusActive}
+          />
         ) : (
           <WorldMap
             isVisited={isVisited}
@@ -149,6 +156,7 @@ export function MapPage() {
             isRegionVisited={isRegionVisited}
             onToggleRegion={toggleRegion}
             regionalViewLocked={regionalViewLocked}
+            onPhotoFocusChange={setPhotoFocusActive}
           />
         )}
       </main>

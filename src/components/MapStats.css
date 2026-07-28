@@ -14,9 +14,16 @@
   align-items: stretch;
   gap: 0.65rem;
   width: 100%;
-  max-width: 180px;
+  max-width: 150px;
   transform: translateY(-50%);
   pointer-events: auto;
+  opacity: 1;
+  transition: opacity 1.6s ease;
+}
+
+.map-stats__toggles--hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .map-stats__toggles .map-view-toggle {

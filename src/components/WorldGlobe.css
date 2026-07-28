@@ -17,6 +17,11 @@
   cursor: grabbing;
 }
 
+.world-globe--photo-focus,
+.world-globe--photo-focus:active {
+  cursor: default;
+}
+
 .world-globe__canvas {
   display: block;
   width: 100%;

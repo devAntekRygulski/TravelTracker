@@ -1,8 +1,8 @@
 .map-view-toggle {
   display: flex;
   width: 100%;
-  max-width: 180px;
-  padding: 0.2rem;
+  max-width: 150px;
+  padding: 0.15rem;
   border: 1px solid #4a4a4a;
   border-radius: 9999px;
   background-color: rgba(26, 26, 26, 0.88);
@@ -14,13 +14,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 2.4rem;
-  padding: 0.35rem 0.65rem;
+  min-height: 1.95rem;
+  padding: 0.28rem 0.5rem;
   border: none;
   border-radius: 9999px;
   background: transparent;
   color: #9a9a9a;
-  font-size: 0.75rem;
+  font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.15;
   cursor: pointer;
@@ -37,8 +37,8 @@
 }
 
 .map-view-toggle__beta {
-  margin-top: 0.12rem;
-  font-size: 0.5rem;
+  margin-top: 0.1rem;
+  font-size: 0.45rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1;

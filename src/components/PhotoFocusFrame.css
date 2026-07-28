@@ -1,0 +1,35 @@
+.photo-focus-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  pointer-events: none;
+}
+
+.photo-focus-frame__back {
+  position: absolute;
+  /* Further below burger: top 0.5rem + 32px hit + larger gap */
+  top: calc(0.5rem + 32px + 2.5rem);
+  left: 2.4rem;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  margin-left: -6px;
+  padding: 0;
+  border: none;
+  border-radius: 0.35rem;
+  background: transparent;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.photo-focus-frame__back-icon {
+  display: block;
+  width: 30px;
+  height: 30px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}

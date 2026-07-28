@@ -13,6 +13,7 @@ interface MapStatsProps {
   onRegionalViewChange: (regionalViewLocked: boolean) => void;
   projectionMode: MapProjectionMode;
   onProjectionModeChange: (mode: MapProjectionMode) => void;
+  hideToggles?: boolean;
 }
 
 function StatNumber({ value }: { value: number }) {
@@ -65,6 +66,7 @@ export function MapStats({
   onRegionalViewChange,
   projectionMode,
   onProjectionModeChange,
+  hideToggles = false,
 }: MapStatsProps) {
   const percentVisited = Math.round(
     (countriesVisited / TOTAL_MAP_COUNTRIES) * 100,
@@ -72,7 +74,10 @@ export function MapStats({
 
   return (
     <aside className="map-stats" aria-label="Travel statistics">
-      <div className="map-stats__toggles">
+      <div
+        className={`map-stats__toggles${hideToggles ? ' map-stats__toggles--hidden' : ''}`}
+        aria-hidden={hideToggles}
+      >
         <MapViewToggle
           regionalViewLocked={regionalViewLocked}
           onChange={onRegionalViewChange}
