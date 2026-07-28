@@ -620,7 +620,9 @@ export function WorldGlobe({
   }, [size, countries, bordersObject, isVisited, isDragging]);
 
   useEffect(() => {
-    const element = containerRef.current;
+    // Listen on the canvas only so overlays (action box, photo panel) keep
+    // working — container-level handlers steal pointerup and clear selection.
+    const element = canvasRef.current;
     if (!element) return;
 
     const stopInertia = () => {
@@ -1137,6 +1139,10 @@ export function WorldGlobe({
       {photoFocus && (
         <>
           <PhotoFocusFrame
+            countryName={
+              countryNameByIdRef.current.get(photoFocus.countryId) ??
+              photoFocus.countryId
+            }
             progress={photoFocus.progress}
             onClose={exitPhotoFocus}
           />

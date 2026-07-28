@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { SAMPLE_PHOTOS } from '../data/samplePhotos';
 import { easeInOutCubic } from '../lib/photoFocus';
 import './PhotoFocusFrame.css';
 
@@ -34,12 +35,17 @@ function paintCloseX(canvas: HTMLCanvasElement, color: string): void {
 }
 
 interface PhotoFocusFrameProps {
+  countryName: string;
   progress: number;
   onClose: () => void;
 }
 
 /** Right-side photos panel while a country is focused. */
-export function PhotoFocusFrame({ progress, onClose }: PhotoFocusFrameProps) {
+export function PhotoFocusFrame({
+  countryName,
+  progress,
+  onClose,
+}: PhotoFocusFrameProps) {
   const opacity = easeInOutCubic(progress);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -76,20 +82,42 @@ export function PhotoFocusFrame({ progress, onClose }: PhotoFocusFrameProps) {
 
   return (
     <div className="photo-focus-frame" style={{ opacity }}>
-      <aside className="photo-focus-frame__panel" aria-label="Add photos">
-        <button
-          ref={buttonRef}
-          type="button"
-          className="photo-focus-frame__close"
-          onClick={onClose}
-          aria-label="Back to map"
-        >
-          <canvas
-            ref={canvasRef}
-            className="photo-focus-frame__close-icon"
-            aria-hidden="true"
-          />
-        </button>
+      <aside
+        className="photo-focus-frame__panel"
+        aria-label={`Photos for ${countryName}`}
+      >
+        <header className="photo-focus-frame__header">
+          <h2 className="photo-focus-frame__title">{countryName}</h2>
+          <button
+            ref={buttonRef}
+            type="button"
+            className="photo-focus-frame__close"
+            onClick={onClose}
+            aria-label="Back to map"
+          >
+            <canvas
+              ref={canvasRef}
+              className="photo-focus-frame__close-icon"
+              aria-hidden="true"
+            />
+          </button>
+        </header>
+
+        <div className="photo-focus-frame__body">
+          <ul className="photo-focus-frame__grid">
+            {SAMPLE_PHOTOS.map((photo) => (
+              <li key={photo.id} className="photo-focus-frame__cell">
+                <img
+                  className="photo-focus-frame__thumb"
+                  src={photo.src}
+                  alt={photo.alt}
+                  loading="lazy"
+                  draggable={false}
+                />
+              </li>
+            ))}
+          </ul>
+        </div>
       </aside>
     </div>
   );

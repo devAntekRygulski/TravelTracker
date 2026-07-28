@@ -7,30 +7,61 @@
 
 /* Right-side shell for the add-photos UI, opposite the focused country. */
 .photo-focus-frame__panel {
+  --photo-focus-panel-gap: 1.35rem;
+  --photo-focus-close-size: 32px;
   position: absolute;
   top: calc(0.5rem + 32px + 5.5rem);
   right: 4rem;
   bottom: 3.5rem;
   left: calc(50% + 2.75rem);
   z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--photo-focus-panel-gap);
   box-sizing: border-box;
+  padding: var(--photo-focus-panel-gap);
   border: 1px solid #4a4a4a;
   border-radius: 1.5rem;
   background-color: rgba(26, 26, 26, 0.92);
   backdrop-filter: blur(8px);
   pointer-events: auto;
+  overflow: hidden;
+}
+
+.photo-focus-frame__header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--photo-focus-close-size);
+  flex-shrink: 0;
+  padding: 0 calc(var(--photo-focus-close-size) + 0.5rem);
+}
+
+.photo-focus-frame__title {
+  margin: 0;
+  max-width: 100%;
+  color: var(--text-primary);
+  font-size: 1.55rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .photo-focus-frame__close {
   position: absolute;
-  top: 1.35rem;
-  right: 1.45rem;
-  z-index: 1;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: var(--photo-focus-close-size);
+  height: var(--photo-focus-close-size);
   margin: 0;
   padding: 0;
   border: none;
@@ -53,6 +84,39 @@
   pointer-events: none;
 }
 
+.photo-focus-frame__body {
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+
+.photo-focus-frame__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.photo-focus-frame__cell {
+  aspect-ratio: 1;
+  min-width: 0;
+  border-radius: 0.55rem;
+  overflow: hidden;
+  background: #1a1a1a;
+  border: 1px solid #3a3a3a;
+}
+
+.photo-focus-frame__thumb {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+
 @media (max-width: 640px) {
   .photo-focus-frame__panel {
     top: auto;
@@ -61,5 +125,13 @@
     bottom: 4.5rem;
     height: min(38vh, 20rem);
     border-radius: 1.35rem;
+  }
+
+  .photo-focus-frame__title {
+    font-size: 1.25rem;
+  }
+
+  .photo-focus-frame__grid {
+    gap: 0.4rem;
   }
 }

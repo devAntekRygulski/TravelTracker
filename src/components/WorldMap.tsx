@@ -1145,6 +1145,9 @@ export function WorldMap({
       {photoFocus && (
         <>
           <PhotoFocusFrame
+            countryName={
+              countryNameById.get(photoFocus.countryId) ?? photoFocus.countryId
+            }
             progress={photoFocus.progress}
             onClose={exitPhotoFocus}
           />
