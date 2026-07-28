@@ -11,8 +11,9 @@
   padding: 0.55rem 0.6rem 0.6rem;
   border: 1px solid #4a4a4a;
   border-radius: 0.7rem;
-  background-color: var(--bg-primary);
+  background-color: rgba(26, 26, 26, 0.88);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
   pointer-events: auto;
 }
 

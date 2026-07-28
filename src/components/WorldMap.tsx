@@ -28,9 +28,15 @@ import {
   flatPhotoFocusTransformString,
   type PhotoFocusTransform,
 } from '../lib/photoFocus';
+import {
+  getCountryTerritories,
+  getTerritoryById,
+  type CountryTerritory,
+} from '../lib/countryTerritories';
 import { MapHoverTooltip } from './MapHoverTooltip';
 import { MapCountryActionBox } from './MapCountryActionBox';
 import { PhotoFocusFrame } from './PhotoFocusFrame';
+import { PhotoFocusTerritoryLinks } from './PhotoFocusTerritoryLinks';
 import './WorldMap.css';
 
 const GEO_URL = '/countries-110m.json';
@@ -60,6 +66,8 @@ const REGION_BORDER_WIDTH = 0.22;
 const HOVER_SCALE = 1.08;
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 16;
+/** Dismiss the country action box once the country drifts this far from it. */
+const SELECTION_DISMISS_DISTANCE_PX = 110;
 // Hide dense regional mesh at world view; fade it in as you zoom.
 const REGION_BORDERS_FADE_START = 2.25;
 const REGION_BORDERS_FADE_END = 4.5;
@@ -418,7 +426,11 @@ export function WorldMap({
     label: string;
     x: number;
     y: number;
+    /** Click point in the country group's SVG user space. */
+    anchorLocalX: number;
+    anchorLocalY: number;
   } | null>(null);
+  const selectedCountryRef = useRef(selectedCountry);
   const [mapZoom, setMapZoom] = useState(1);
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [regionPaths, setRegionPaths] = useState<RegionPath[]>([]);
@@ -426,6 +438,8 @@ export function WorldMap({
   const [regionalPrepared, setRegionalPrepared] = useState(false);
   const [photoFocus, setPhotoFocus] = useState<{
     countryId: string;
+    territoryId: string;
+    territories: CountryTerritory[];
     progress: number;
     transform: PhotoFocusTransform;
   } | null>(null);
@@ -740,6 +754,41 @@ export function WorldMap({
     setSelectedCountry(null);
   }, []);
 
+  useEffect(() => {
+    selectedCountryRef.current = selectedCountry;
+  }, [selectedCountry]);
+
+  const dismissSelectionIfCountryFar = useCallback(() => {
+    const selected = selectedCountryRef.current;
+    const container = containerRef.current;
+    if (!selected || !container) return;
+
+    const el = container.querySelector(
+      `[data-country-id="${CSS.escape(selected.id)}"]`,
+    ) as SVGGraphicsElement | null;
+    const svg = el?.ownerSVGElement;
+    const ctm = el?.getScreenCTM?.();
+    if (!el || !svg || !ctm) {
+      clearSelection();
+      return;
+    }
+
+    const pt = svg.createSVGPoint();
+    pt.x = selected.anchorLocalX;
+    pt.y = selected.anchorLocalY;
+    const screen = pt.matrixTransform(ctm);
+    const containerRect = container.getBoundingClientRect();
+    const currentX = screen.x - containerRect.left;
+    const currentY = screen.y - containerRect.top;
+
+    if (
+      Math.hypot(currentX - selected.x, currentY - selected.y) >
+      SELECTION_DISMISS_DISTANCE_PX
+    ) {
+      clearSelection();
+    }
+  }, [clearSelection]);
+
   const countryNameById = useMemo(() => {
     const names = new Map<string, string>();
     if (!topology) return names;
@@ -973,8 +1022,10 @@ export function WorldMap({
       );
       if (!geo) return;
 
+      const territories = getCountryTerritories(geo);
+      const mainland = territories[0];
       const transform = computeFlatPhotoFocusTransform(
-        geo,
+        mainland.feature,
         mapProjection,
         dimensions.width,
         dimensions.height,
@@ -997,7 +1048,14 @@ export function WorldMap({
       }
 
       const startedAt = performance.now();
-      setPhotoFocus({ countryId, progress: 0, transform });
+      const base = {
+        countryId,
+        territoryId: mainland.id,
+        territories,
+        transform,
+      };
+      photoFocusRef.current = { ...base, progress: 0 };
+      setPhotoFocus({ ...base, progress: 0 });
       onPhotoFocusChangeRef.current?.(true);
 
       const tick = (now: number) => {
@@ -1005,7 +1063,9 @@ export function WorldMap({
           1,
           (now - startedAt) / PHOTO_FOCUS_DURATION_MS,
         );
-        setPhotoFocus({ countryId, progress, transform });
+        const next = { ...base, progress };
+        photoFocusRef.current = next;
+        setPhotoFocus(next);
         if (progress < 1) {
           photoFocusRafRef.current = requestAnimationFrame(tick);
         } else {
@@ -1025,6 +1085,33 @@ export function WorldMap({
     ],
   );
 
+  const switchPhotoTerritory = useCallback(
+    (territoryId: string) => {
+      if (!mapProjection || !photoFocusRef.current) return;
+      const current = photoFocusRef.current;
+      const territory = getTerritoryById(current.territories, territoryId);
+      const transform = computeFlatPhotoFocusTransform(
+        territory.feature,
+        mapProjection,
+        dimensions.width,
+        dimensions.height,
+        mapCenter,
+        mapZoomRef.current,
+      );
+      if (!transform) return;
+
+      const next = {
+        ...current,
+        territoryId: territory.id,
+        transform,
+        progress: 1,
+      };
+      photoFocusRef.current = next;
+      setPhotoFocus(next);
+    },
+    [dimensions.height, dimensions.width, mapCenter, mapProjection],
+  );
+
   if (!topology || !mapProjection || dimensions.width === 0 || dimensions.height === 0) {
     return <div className="world-map" ref={containerRef} />;
   }
@@ -1032,6 +1119,13 @@ export function WorldMap({
   const photoFocusOpacity = photoFocus
     ? 1 - easeInOutCubic(photoFocus.progress)
     : 1;
+  const activeFocusTerritory = photoFocus
+    ? getTerritoryById(photoFocus.territories, photoFocus.territoryId)
+    : null;
+  const activeFocusTerritoryPath =
+    activeFocusTerritory && pathGenerator
+      ? pathGenerator(activeFocusTerritory.feature) ?? ''
+      : '';
 
   return (
     <div
@@ -1049,10 +1143,18 @@ export function WorldMap({
       }}
     >
       {photoFocus && (
-        <PhotoFocusFrame
-          progress={photoFocus.progress}
-          onClose={exitPhotoFocus}
-        />
+        <>
+          <PhotoFocusFrame
+            progress={photoFocus.progress}
+            onClose={exitPhotoFocus}
+          />
+          <PhotoFocusTerritoryLinks
+            territories={photoFocus.territories}
+            activeTerritoryId={photoFocus.territoryId}
+            progress={photoFocus.progress}
+            onSelect={switchPhotoTerritory}
+          />
+        </>
       )}
       <MapHoverTooltip
         label={hoverLabel}
@@ -1100,13 +1202,20 @@ export function WorldMap({
               if (photoFocusRef.current) return;
               pendingZoomRef.current = position.zoom;
               applyRegionBorderOpacity(position.zoom);
+              if (selectedCountryRef.current) {
+                dismissSelectionIfCountryFar();
+              }
               if (zoomRafRef.current) return;
               zoomRafRef.current = requestAnimationFrame(() => {
                 zoomRafRef.current = 0;
                 commitZoomIfNeeded(pendingZoomRef.current);
+                dismissSelectionIfCountryFar();
               });
             }}
-            onMoveEnd={handleMapMoveEnd}
+            onMoveEnd={(position) => {
+              handleMapMoveEnd(position);
+              dismissSelectionIfCountryFar();
+            }}
             filterZoomEvent={(event) =>
               !photoFocusRef.current &&
               mapZoomFilter(event as unknown as Event)
@@ -1123,9 +1232,18 @@ export function WorldMap({
                         const bFocus = String(b.id) === focusId ? 1 : 0;
                         if (aFocus !== bFocus) return aFocus - bFocus;
                       }
-                      const aHovered = String(a.id) === hoveredCountryId ? 1 : 0;
-                      const bHovered = String(b.id) === hoveredCountryId ? 1 : 0;
-                      return aHovered - bHovered;
+                      const selectedId = selectedCountry?.id;
+                      const aLifted =
+                        String(a.id) === hoveredCountryId ||
+                        String(a.id) === selectedId
+                          ? 1
+                          : 0;
+                      const bLifted =
+                        String(b.id) === hoveredCountryId ||
+                        String(b.id) === selectedId
+                          ? 1
+                          : 0;
+                      return aLifted - bLifted;
                     })
                     .map((geo) => {
                       const countryId = String(geo.id);
@@ -1136,6 +1254,8 @@ export function WorldMap({
                         !isPhotoFocusing &&
                         !selectedCountry &&
                         hoveredCountryId === countryId;
+                      // Keep click highlight identical to hover (same lift + stroke).
+                      const isHighlighted = hovered || isSelected;
                       const countryName =
                         (geo.properties as { name?: string })?.name ?? countryId;
                       const opacity = isFocusCountry ? 1 : photoFocusOpacity;
@@ -1143,14 +1263,14 @@ export function WorldMap({
                       const fillStyle = {
                         ...countryFillStyle(
                           visited,
-                          hovered || isFocusCountry || isSelected,
+                          isHighlighted || isFocusCountry,
                         ),
                         cursor: isPhotoFocusing ? 'default' : 'pointer',
                         opacity,
                       };
                       const borderStyle = {
                         ...countryBorderStyle(
-                          hovered || isFocusCountry || isSelected
+                          isHighlighted || isFocusCountry
                             ? BORDER_WIDTH_ACTIVE
                             : BORDER_WIDTH,
                         ),
@@ -1162,11 +1282,55 @@ export function WorldMap({
                             photoFocus.transform,
                             photoFocus.progress,
                           )
-                        : getHoverTransform(
-                            geo,
-                            mapProjection,
-                            hovered || isSelected,
-                          );
+                        : getHoverTransform(geo, mapProjection, isHighlighted);
+
+                      if (isFocusCountry && photoFocus && pathGenerator) {
+                        const remoteStyle = {
+                          ...countryFillStyle(visited, false),
+                          cursor: 'default',
+                          opacity: photoFocusOpacity,
+                        };
+                        const remoteBorder = {
+                          ...countryBorderStyle(BORDER_WIDTH),
+                          opacity: photoFocusOpacity,
+                        };
+
+                        return (
+                          <g
+                            key={geo.rsmKey}
+                            className="world-map__country"
+                            data-country-id={countryId}
+                            style={{ pointerEvents: 'none' }}
+                            aria-label={countryName}
+                          >
+                            {photoFocus.territories.map((territory) => {
+                              if (territory.id === photoFocus.territoryId) {
+                                return null;
+                              }
+                              const d = pathGenerator(territory.feature) ?? '';
+                              if (!d) return null;
+                              return (
+                                <g key={territory.id}>
+                                  <path d={d} style={remoteStyle} />
+                                  <path d={d} style={remoteBorder} />
+                                </g>
+                              );
+                            })}
+                            {activeFocusTerritoryPath ? (
+                              <g transform={transform}>
+                                <path
+                                  d={activeFocusTerritoryPath}
+                                  style={fillStyle}
+                                />
+                                <path
+                                  d={activeFocusTerritoryPath}
+                                  style={borderStyle}
+                                />
+                              </g>
+                            ) : null}
+                          </g>
+                        );
+                      }
 
                       return (
                         <g
@@ -1195,11 +1359,27 @@ export function WorldMap({
                                 ? event.clientY - rect.top
                                 : 0;
                               clearHover();
+                              const group = (event.currentTarget as Element)
+                                .closest('[data-country-id]') as SVGGraphicsElement | null;
+                              const svg = group?.ownerSVGElement;
+                              const ctm = group?.getScreenCTM?.();
+                              let anchorLocalX = 0;
+                              let anchorLocalY = 0;
+                              if (group && svg && ctm) {
+                                const pt = svg.createSVGPoint();
+                                pt.x = event.clientX;
+                                pt.y = event.clientY;
+                                const local = pt.matrixTransform(ctm.inverse());
+                                anchorLocalX = local.x;
+                                anchorLocalY = local.y;
+                              }
                               setSelectedCountry({
                                 id: countryId,
                                 label: countryName,
                                 x,
                                 y,
+                                anchorLocalX,
+                                anchorLocalY,
                               });
                             }}
                             style={{

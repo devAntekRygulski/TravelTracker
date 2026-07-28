@@ -1,0 +1,34 @@
+.photo-focus-territories {
+  position: absolute;
+  z-index: 8;
+  left: 2.5rem;
+  bottom: 6.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
+  max-width: min(14rem, calc(50% - 3rem));
+  pointer-events: none;
+}
+
+.photo-focus-territories__link {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #c8c8c8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: left;
+  text-decoration: underline;
+  text-underline-offset: 0.18em;
+  cursor: pointer;
+  pointer-events: auto;
+  transition: color 0.15s ease;
+}
+
+.photo-focus-territories__link:hover,
+.photo-focus-territories__link:focus-visible {
+  color: var(--yellow-bright, #f5c518);
+}
