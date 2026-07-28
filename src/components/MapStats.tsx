@@ -89,7 +89,10 @@ export function MapStats({
         />
       </div>
 
-      <div className="map-stats__counters">
+      <div
+        className={`map-stats__counters${hideToggles ? ' map-stats__counters--hidden' : ''}`}
+        aria-hidden={hideToggles}
+      >
         <div className="map-stats__item">
           <PercentStat value={percentVisited} />
           <span className="map-stats__label">of countries visited</span>

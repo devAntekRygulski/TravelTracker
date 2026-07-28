@@ -46,6 +46,13 @@
   background-color: rgba(26, 26, 26, 0.88);
   transform: translateX(-50%);
   backdrop-filter: blur(8px);
+  opacity: 1;
+  transition: opacity 1.6s ease;
+}
+
+.map-stats__counters--hidden {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .map-stats__item {

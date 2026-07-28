@@ -34,34 +34,151 @@ function centroidDistance(
   return Math.hypot(dLon, dLat);
 }
 
+function ringCrossesAntimeridian(ring: Position[]): boolean {
+  for (let i = 1; i < ring.length; i += 1) {
+    if (Math.abs(ring[i][0] - ring[i - 1][0]) > 180) return true;
+  }
+  return false;
+}
+
+/** Make consecutive longitudes continuous (e.g. 170 → 190 instead of 170 → -170). */
+function unwrapRing(ring: Position[]): Position[] {
+  const out: Position[] = [[ring[0][0], ring[0][1]]];
+  for (let i = 1; i < ring.length; i += 1) {
+    let lon = ring[i][0];
+    const prev = out[i - 1][0];
+    while (lon - prev > 180) lon -= 360;
+    while (lon - prev < -180) lon += 360;
+    out.push([lon, ring[i][1]]);
+  }
+  return out;
+}
+
+function normalizeLongitude(lon: number): number {
+  let x = lon;
+  while (x > 180) x -= 360;
+  while (x < -180) x += 360;
+  return x;
+}
+
+/**
+ * Sutherland–Hodgman clip of a ring against a half-plane lon ? boundary.
+ * `inside` tests whether a longitude is retained.
+ */
+function clipRingToLongitude(
+  ring: Position[],
+  inside: (lon: number) => boolean,
+  boundary: number,
+): Position[] {
+  const pts = ring.slice();
+  if (
+    pts.length > 1 &&
+    pts[0][0] === pts[pts.length - 1][0] &&
+    pts[0][1] === pts[pts.length - 1][1]
+  ) {
+    pts.pop();
+  }
+  if (pts.length < 3) return [];
+
+  const out: Position[] = [];
+  for (let i = 0; i < pts.length; i += 1) {
+    const start = pts[i];
+    const end = pts[(i + 1) % pts.length];
+    const startIn = inside(start[0]);
+    const endIn = inside(end[0]);
+    if (endIn) {
+      if (!startIn) {
+        const t = (boundary - start[0]) / (end[0] - start[0]);
+        out.push([boundary, start[1] + t * (end[1] - start[1])]);
+      }
+      out.push([end[0], end[1]]);
+    } else if (startIn) {
+      const t = (boundary - start[0]) / (end[0] - start[0]);
+      out.push([boundary, start[1] + t * (end[1] - start[1])]);
+    }
+  }
+
+  if (out.length < 3) return [];
+  out.push([out[0][0], out[0][1]]);
+  return out;
+}
+
+/**
+ * Split a polygon that crosses the antimeridian into non-wrapping pieces
+ * so projected bounds stay tight (critical for Russia / Fiji focus framing).
+ */
+function splitAntimeridianPolygon(coordinates: Position[][]): Position[][][] {
+  const outer = coordinates[0];
+  if (!ringCrossesAntimeridian(outer)) {
+    return [coordinates];
+  }
+
+  const unwrapped = unwrapRing(outer);
+  const minLon = Math.min(...unwrapped.map((point) => point[0]));
+  const maxLon = Math.max(...unwrapped.map((point) => point[0]));
+  const holes = coordinates.slice(1);
+
+  const result: Position[][][] = [];
+  // Cover the unwrapped span with canonical 360° windows: [-180,180], [180,540], …
+  let windowStart = Math.floor((minLon + 180) / 360) * 360 - 180;
+  while (windowStart < maxLon) {
+    const left = windowStart;
+    const right = windowStart + 360;
+    let ring = unwrapped;
+    ring = clipRingToLongitude(ring, (lon) => lon >= left, left);
+    ring = clipRingToLongitude(ring, (lon) => lon <= right, right);
+
+    if (ring.length >= 4) {
+      const shift = left + 180;
+      const normalized = ring.map(
+        ([lon, lat]) => [normalizeLongitude(lon - shift), lat] as Position,
+      );
+      if (
+        normalized[0][0] !== normalized[normalized.length - 1][0] ||
+        normalized[0][1] !== normalized[normalized.length - 1][1]
+      ) {
+        normalized.push([normalized[0][0], normalized[0][1]]);
+      }
+      result.push([normalized, ...holes]);
+    }
+
+    windowStart += 360;
+  }
+
+  return result.length > 0 ? result : [coordinates];
+}
+
+function partFromCoordinates(
+  coordinates: Position[][],
+  index: number,
+): PolygonPart {
+  const g: Polygon = { type: 'Polygon', coordinates };
+  return {
+    index,
+    coordinates,
+    area: geoArea(g),
+    centroid: geoCentroid(g) as [number, number],
+    bounds: geoBounds(g) as [[number, number], [number, number]],
+  };
+}
+
 function polygonParts(geometry: Geometry): PolygonPart[] {
-  if (geometry.type === 'Polygon') {
-    const g: Polygon = geometry;
-    return [
-      {
-        index: 0,
-        coordinates: g.coordinates,
-        area: geoArea(g),
-        centroid: geoCentroid(g) as [number, number],
-        bounds: geoBounds(g) as [[number, number], [number, number]],
-      },
-    ];
-  }
+  const polygons: Position[][][] =
+    geometry.type === 'Polygon'
+      ? [geometry.coordinates]
+      : geometry.type === 'MultiPolygon'
+        ? geometry.coordinates
+        : [];
 
-  if (geometry.type !== 'MultiPolygon') {
-    return [];
+  const parts: PolygonPart[] = [];
+  let index = 0;
+  for (const polygon of polygons) {
+    for (const split of splitAntimeridianPolygon(polygon)) {
+      parts.push(partFromCoordinates(split, index));
+      index += 1;
+    }
   }
-
-  return geometry.coordinates.map((coordinates, index) => {
-    const g: Polygon = { type: 'Polygon', coordinates };
-    return {
-      index,
-      coordinates,
-      area: geoArea(g),
-      centroid: geoCentroid(g) as [number, number],
-      bounds: geoBounds(g) as [[number, number], [number, number]],
-    };
-  });
+  return parts;
 }
 
 function clusterParts(parts: PolygonPart[]): PolygonPart[][] {
@@ -134,6 +251,15 @@ function clusterCentroid(cluster: PolygonPart[]): [number, number] {
   return [lonSum / areaSum, latSum / areaSum];
 }
 
+function isKaliningrad(lon: number, lat: number): boolean {
+  return lat > 54 && lat < 56 && lon > 19 && lon < 23;
+}
+
+/** Russia: only mainland + Kaliningrad; drop arctic/island fragments. */
+function keepRussiaRemote(centroid: [number, number]): boolean {
+  return isKaliningrad(centroid[0], centroid[1]);
+}
+
 function nameTerritory(
   countryId: string,
   countryName: string,
@@ -146,10 +272,15 @@ function nameTerritory(
   const [lon, lat] = centroid;
   let name: string | null = null;
 
-  // United States
+  // United States — Hawaii first; lon alone would also match Alaska.
   if (countryId === '840') {
-    if (lat > 50 || lon < -129) name = 'Alaska';
-    else if (lat > 18 && lat < 24 && lon > -162 && lon < -154) name = 'Hawaii';
+    if (lat > 18 && lat < 24 && lon > -162 && lon < -154) name = 'Hawaii';
+    else if (lat > 50 && lon < -129) name = 'Alaska';
+  }
+
+  // Russia — only Kaliningrad is exposed as a remote territory.
+  if (countryId === '643') {
+    if (isKaliningrad(lon, lat)) name = 'Kaliningrad';
   }
 
   // France
@@ -233,12 +364,17 @@ export function getCountryTerritories(
 
   clusters.forEach((cluster, index) => {
     const area = cluster.reduce((sum, part) => sum + part.area, 0);
-    if (index > 0 && area / mainlandArea < MIN_AREA_RATIO) {
-      return;
-    }
-
     const isMainland = index === 0;
     const centroid = clusterCentroid(cluster);
+
+    if (!isMainland) {
+      if (countryId === '643') {
+        if (!keepRussiaRemote(centroid)) return;
+      } else if (area / mainlandArea < MIN_AREA_RATIO) {
+        return;
+      }
+    }
+
     const name = nameTerritory(
       countryId,
       countryName,

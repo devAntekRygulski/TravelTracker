@@ -5,31 +5,61 @@
   pointer-events: none;
 }
 
-.photo-focus-frame__back {
+/* Right-side shell for the add-photos UI, opposite the focused country. */
+.photo-focus-frame__panel {
   position: absolute;
-  /* Further below burger: top 0.5rem + 32px hit + larger gap */
-  top: calc(0.5rem + 32px + 2.5rem);
-  left: 2.4rem;
+  top: calc(0.5rem + 32px + 5.5rem);
+  right: 4rem;
+  bottom: 3.5rem;
+  left: calc(50% + 2.75rem);
+  z-index: 1;
+  box-sizing: border-box;
+  border: 1px solid #4a4a4a;
+  border-radius: 1.5rem;
+  background-color: rgba(26, 26, 26, 0.92);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+.photo-focus-frame__close {
+  position: absolute;
+  top: 1.35rem;
+  right: 1.45rem;
   z-index: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  margin-left: -6px;
+  width: 32px;
+  height: 32px;
+  margin: 0;
   padding: 0;
   border: none;
   border-radius: 0.35rem;
   background: transparent;
+  color: #9a9a9a;
   cursor: pointer;
-  pointer-events: auto;
+  transition: color 0.15s ease;
 }
 
-.photo-focus-frame__back-icon {
+.photo-focus-frame__close:hover,
+.photo-focus-frame__close:focus-visible {
+  color: var(--text-primary);
+}
+
+.photo-focus-frame__close-icon {
   display: block;
-  width: 30px;
-  height: 30px;
-  object-fit: contain;
+  width: 18px;
+  height: 18px;
   pointer-events: none;
-  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .photo-focus-frame__panel {
+    top: auto;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 4.5rem;
+    height: min(38vh, 20rem);
+    border-radius: 1.35rem;
+  }
 }

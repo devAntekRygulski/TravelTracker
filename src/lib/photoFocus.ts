@@ -1,5 +1,4 @@
 import {
-  geoCentroid,
   geoPath,
   type GeoProjection,
 } from 'd3-geo';
@@ -36,16 +35,16 @@ export type PhotoFocusSafeRect = {
 };
 
 /**
- * Left-half region that stays clear of the header, back arrow, and
- * bottom stats oval (which spans across the center).
+ * Left-half region for the focused country. Cleared of the header;
+ * bottom stays open for territory links (stats oval is hidden in this mode).
  */
 export function getPhotoFocusSafeRect(
   viewportWidth: number,
   viewportHeight: number,
 ): PhotoFocusSafeRect {
-  // Burger (top 0.5rem + 32px) + larger gap + back arrow (40px) + breathing room
-  const topUi = 8 + 32 + 40 + 40 + 16;
-  const bottomUi = 120;
+  // Burger + header clearance, then extra top inset so framing sits lower.
+  const topUi = 8 + 32 + 72 + 48;
+  const bottomUi = 72;
   const leftUi = 28;
   const midGap = 28;
 
@@ -96,11 +95,13 @@ export function computeFlatPhotoFocusTransform(
   const ph = y1 - y0;
   if (!(pw > 0) || !(ph > 0)) return null;
 
-  const centroid = projection(geoCentroid(geo));
+  // Use bbox center (not geoCentroid) so elongated chains like Hawaii
+  // stay fully inside the safe rect after scale.
+  const pcx = (x0 + x1) / 2;
+  const pcy = (y0 + y1) / 2;
   const centerProj = projection(mapCenter);
-  if (!centroid || !centerProj) return null;
+  if (!centerProj) return null;
 
-  const [pcx, pcy] = centroid;
   const [cpx, cpy] = centerProj;
   const zoom = Math.max(mapZoom, 0.001);
 
