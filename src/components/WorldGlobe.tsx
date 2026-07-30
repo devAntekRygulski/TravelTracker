@@ -12,6 +12,7 @@ import type { Feature, FeatureCollection, Geometry, MultiLineString } from 'geoj
 import type { Topology } from 'topojson-specification';
 import {
   PHOTO_FOCUS_DURATION_MS,
+  applyPhotoFocusFrameProgress,
   easeInOutCubic,
   getPhotoFocusSafeRect,
   lerp,
@@ -960,6 +961,7 @@ export function WorldGlobe({
       translateRef.current = null;
     }
 
+    containerRef.current?.style.removeProperty('--photo-fade');
     photoFocusRef.current = null;
     setPhotoFocus(null);
     onPhotoFocusChangeRef.current?.(false);
@@ -1053,13 +1055,15 @@ export function WorldGlobe({
 
       const next = { ...base, progress };
       photoFocusRef.current = next;
-      setPhotoFocus(next);
+      // Canvas already paints from refs; avoid React re-renders each frame.
+      applyPhotoFocusFrameProgress(containerRef.current, progress);
       schedulePaintRef.current();
 
       if (progress < 1) {
         photoFocusRafRef.current = requestAnimationFrame(tick);
       } else {
         photoFocusRafRef.current = null;
+        setPhotoFocus(next);
       }
     };
 

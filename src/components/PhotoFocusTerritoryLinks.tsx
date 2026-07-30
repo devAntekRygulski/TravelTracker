@@ -24,7 +24,11 @@ export function PhotoFocusTerritoryLinks({
   const opacity = easeInOutCubic(Math.max(0, (progress - 0.55) / 0.45));
 
   return (
-    <div className="photo-focus-territories" style={{ opacity }}>
+    <div
+      className="photo-focus-territories"
+      data-photo-focus-links
+      style={{ opacity }}
+    >
       {links.map((territory) => (
         <button
           key={territory.id}

@@ -81,7 +81,11 @@ export function PhotoFocusFrame({
   }, []);
 
   return (
-    <div className="photo-focus-frame" style={{ opacity }}>
+    <div
+      className="photo-focus-frame"
+      data-photo-focus-frame
+      style={{ opacity }}
+    >
       <aside
         className="photo-focus-frame__panel"
         aria-label={`Photos for ${countryName}`}

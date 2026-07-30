@@ -41,12 +41,13 @@
 .photo-focus-frame__title {
   margin: 0;
   max-width: 100%;
-  color: var(--text-primary);
-  font-size: 1.55rem;
-  font-weight: 700;
+  color: #9a9a9a;
+  font-size: 1.15rem;
+  font-weight: 600;
   letter-spacing: 0.01em;
-  line-height: 1.2;
+  line-height: 1.25;
   text-align: center;
+  text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -128,7 +129,7 @@
   }
 
   .photo-focus-frame__title {
-    font-size: 1.25rem;
+    font-size: 1rem;
   }
 
   .photo-focus-frame__grid {

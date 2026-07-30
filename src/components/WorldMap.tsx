@@ -23,8 +23,8 @@ import {
 import { useRegionGeoData } from '../hooks/useRegionGeoData';
 import {
   PHOTO_FOCUS_DURATION_MS,
+  applyPhotoFocusFrameProgress,
   computeFlatPhotoFocusTransform,
-  easeInOutCubic,
   flatPhotoFocusTransformString,
   type PhotoFocusTransform,
 } from '../lib/photoFocus';
@@ -993,6 +993,7 @@ export function WorldMap({
       cancelAnimationFrame(photoFocusRafRef.current);
       photoFocusRafRef.current = 0;
     }
+    containerRef.current?.style.removeProperty('--photo-fade');
     setPhotoFocus(null);
     onPhotoFocusChangeRef.current?.(false);
   }, []);
@@ -1065,11 +1066,17 @@ export function WorldMap({
         );
         const next = { ...base, progress };
         photoFocusRef.current = next;
-        setPhotoFocus(next);
+        // Animate via DOM — avoid React re-rendering the whole map each frame.
+        applyPhotoFocusFrameProgress(
+          containerRef.current,
+          progress,
+          transform,
+        );
         if (progress < 1) {
           photoFocusRafRef.current = requestAnimationFrame(tick);
         } else {
           photoFocusRafRef.current = 0;
+          setPhotoFocus(next);
         }
       };
 
@@ -1116,9 +1123,6 @@ export function WorldMap({
     return <div className="world-map" ref={containerRef} />;
   }
 
-  const photoFocusOpacity = photoFocus
-    ? 1 - easeInOutCubic(photoFocus.progress)
-    : 1;
   const activeFocusTerritory = photoFocus
     ? getTerritoryById(photoFocus.territories, photoFocus.territoryId)
     : null;
@@ -1261,7 +1265,8 @@ export function WorldMap({
                       const isHighlighted = hovered || isSelected;
                       const countryName =
                         (geo.properties as { name?: string })?.name ?? countryId;
-                      const opacity = isFocusCountry ? 1 : photoFocusOpacity;
+                      // Fade other countries via CSS --photo-fade during focus animation.
+                      const opacity = 1;
 
                       const fillStyle = {
                         ...countryFillStyle(
@@ -1291,11 +1296,11 @@ export function WorldMap({
                         const remoteStyle = {
                           ...countryFillStyle(visited, false),
                           cursor: 'default',
-                          opacity: photoFocusOpacity,
+                          opacity: 1,
                         };
                         const remoteBorder = {
                           ...countryBorderStyle(BORDER_WIDTH),
-                          opacity: photoFocusOpacity,
+                          opacity: 1,
                         };
 
                         return (
@@ -1313,14 +1318,14 @@ export function WorldMap({
                               const d = pathGenerator(territory.feature) ?? '';
                               if (!d) return null;
                               return (
-                                <g key={territory.id}>
+                                <g key={territory.id} data-photo-fade>
                                   <path d={d} style={remoteStyle} />
                                   <path d={d} style={remoteBorder} />
                                 </g>
                               );
                             })}
                             {activeFocusTerritoryPath ? (
-                              <g transform={transform}>
+                              <g data-photo-focus-transform transform={transform}>
                                 <path
                                   d={activeFocusTerritoryPath}
                                   style={fillStyle}
@@ -1340,6 +1345,7 @@ export function WorldMap({
                           key={geo.rsmKey}
                           className="world-map__country"
                           data-country-id={countryId}
+                          data-photo-fade={photoFocus ? '' : undefined}
                           transform={transform}
                           style={{ pointerEvents: isPhotoFocusing ? 'none' : undefined }}
                         >

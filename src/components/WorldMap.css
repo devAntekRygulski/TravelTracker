@@ -43,6 +43,14 @@
   transition: none;
 }
 
+.world-map--photo-focus [data-photo-fade] {
+  opacity: var(--photo-fade, 1);
+}
+
+.world-map--photo-focus .world-map__country {
+  transition: none;
+}
+
 .world-map__overlays {
   pointer-events: none;
 }

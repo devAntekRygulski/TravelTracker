@@ -129,3 +129,43 @@ export function flatPhotoFocusTransformString(
   const dy = lerp(0, focus.dy, t);
   return `translate(${dx},${dy}) translate(${focus.cx},${focus.cy}) scale(${scale}) translate(${-focus.cx},${-focus.cy})`;
 }
+
+/** Drive focus visuals without React re-renders (call from rAF). */
+export function applyPhotoFocusFrameProgress(
+  root: ParentNode | null,
+  progress: number,
+  transform: PhotoFocusTransform | null = null,
+): void {
+  if (!root) return;
+
+  const eased = easeInOutCubic(progress);
+  if (root instanceof HTMLElement) {
+    root.style.setProperty('--photo-fade', String(1 - eased));
+  }
+
+  if (transform) {
+    const active = root.querySelector('[data-photo-focus-transform]');
+    if (active) {
+      active.setAttribute(
+        'transform',
+        flatPhotoFocusTransformString(transform, progress),
+      );
+    }
+  }
+
+  const frame = root.querySelector(
+    '[data-photo-focus-frame]',
+  ) as HTMLElement | null;
+  if (frame) {
+    frame.style.opacity = String(eased);
+  }
+
+  const links = root.querySelector(
+    '[data-photo-focus-links]',
+  ) as HTMLElement | null;
+  if (links) {
+    links.style.opacity = String(
+      easeInOutCubic(Math.max(0, (progress - 0.55) / 0.45)),
+    );
+  }
+}
