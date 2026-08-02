@@ -20,10 +20,9 @@
   gap: var(--photo-focus-panel-gap);
   box-sizing: border-box;
   padding: var(--photo-focus-panel-gap);
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--yellow-bright, #f5c518);
   border-radius: 1.5rem;
-  background-color: rgba(26, 26, 26, 0.92);
-  backdrop-filter: blur(8px);
+  background-color: #1a1a1a;
   pointer-events: auto;
   overflow: hidden;
 }
@@ -33,24 +32,38 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: var(--photo-focus-close-size);
+  min-height: max(var(--photo-focus-close-size), 1.25rem);
   flex-shrink: 0;
   padding: 0 calc(var(--photo-focus-close-size) + 0.5rem);
 }
 
 .photo-focus-frame__title {
+  display: flex;
+  justify-content: center;
+  align-items: center;
   margin: 0;
   max-width: 100%;
   color: #9a9a9a;
-  font-size: 1.15rem;
-  font-weight: 600;
-  letter-spacing: 0.01em;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   line-height: 1.25;
   text-align: center;
   text-transform: uppercase;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.photo-focus-frame__title-image {
+  display: block;
+  height: 1.25rem;
+  width: auto;
+  max-width: min(100%, 92%);
+  object-fit: contain;
+  user-select: none;
+  pointer-events: none;
 }
 
 .photo-focus-frame__close {
@@ -70,12 +83,11 @@
   background: transparent;
   color: #9a9a9a;
   cursor: pointer;
-  transition: color 0.15s ease;
 }
 
 .photo-focus-frame__close:hover,
 .photo-focus-frame__close:focus-visible {
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .photo-focus-frame__close-icon {
@@ -85,11 +97,129 @@
   pointer-events: none;
 }
 
+.photo-focus-frame__content {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.photo-focus-frame__file-input {
+  display: none;
+}
+
+.photo-focus-frame__action {
+  padding: 0.55rem 1.15rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 9999px;
+  background-color: rgba(26, 26, 26, 0.92);
+  color: #c8c8c8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    filter 0.15s ease,
+    transform 0.15s ease;
+}
+
+.photo-focus-frame__action--primary {
+  border-color: var(--yellow-bright, #f5c518);
+  color: var(--yellow-bright, #f5c518);
+}
+
+.photo-focus-frame__action:hover:not(:disabled),
+.photo-focus-frame__action:focus-visible:not(:disabled) {
+  color: var(--yellow-bright, #f5c518);
+  filter: brightness(1.06);
+}
+
+.photo-focus-frame__action:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.photo-focus-frame__action:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.photo-focus-frame__error {
+  margin: 0;
+  flex-shrink: 0;
+  color: #e08585;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.photo-focus-frame__error--overlay {
+  margin-top: 0.75rem;
+}
+
+.photo-focus-frame__empty {
+  margin: 2.5rem 0 0;
+  color: #7a7a7a;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
 .photo-focus-frame__body {
   box-sizing: border-box;
   flex: 1;
   min-height: 0;
   overflow: auto;
+}
+
+.photo-focus-frame__body--blurred {
+  /* One sheet of blur over the whole gallery (not per photo). */
+  filter: blur(9px);
+  pointer-events: none;
+  user-select: none;
+  overflow: hidden;
+  /* Soft fade on every edge — same kind as the natural bottom falloff. */
+  --photo-blur-fade: 2.75rem;
+  -webkit-mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      #000 var(--photo-blur-fade),
+      #000 calc(100% - var(--photo-blur-fade)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 var(--photo-blur-fade),
+      #000 calc(100% - var(--photo-blur-fade)),
+      transparent 100%
+    );
+  -webkit-mask-composite: source-in;
+  mask-image:
+    linear-gradient(
+      to right,
+      transparent 0%,
+      #000 var(--photo-blur-fade),
+      #000 calc(100% - var(--photo-blur-fade)),
+      transparent 100%
+    ),
+    linear-gradient(
+      to bottom,
+      transparent 0%,
+      #000 var(--photo-blur-fade),
+      #000 calc(100% - var(--photo-blur-fade)),
+      transparent 100%
+    );
+  mask-composite: intersect;
+}
+
+.photo-focus-frame__body--blurred .photo-focus-frame__grid {
+  /* Keep photo content away from the clip edges so the fade has room. */
+  padding: 1.25rem 1.5rem 2.5rem;
+  box-sizing: border-box;
 }
 
 .photo-focus-frame__grid {
@@ -102,12 +232,45 @@
 }
 
 .photo-focus-frame__cell {
+  position: relative;
   aspect-ratio: 1;
   min-width: 0;
   border-radius: 0.55rem;
   overflow: hidden;
   background: #1a1a1a;
   border: 1px solid #3a3a3a;
+}
+
+.photo-focus-frame__delete {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  padding: 0;
+  border: none;
+  border-radius: 9999px;
+  background: rgba(15, 15, 15, 0.75);
+  color: #d8d8d8;
+  font-size: 0.95rem;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0;
+  transition:
+    opacity 0.15s ease,
+    color 0.15s ease;
+}
+
+.photo-focus-frame__cell:hover .photo-focus-frame__delete,
+.photo-focus-frame__delete:focus-visible {
+  opacity: 1;
+}
+
+.photo-focus-frame__delete:hover {
+  color: #ffffff;
 }
 
 .photo-focus-frame__thumb {
@@ -118,21 +281,127 @@
   user-select: none;
 }
 
+.photo-focus-frame__upload-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: rgba(26, 26, 26, 0.18);
+}
+
+.photo-focus-frame__upload-options {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  gap: 1.75rem;
+  max-width: 100%;
+}
+
+.photo-focus-frame__upload-computer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  min-width: 11rem;
+}
+
+.photo-focus-frame__upload-label {
+  margin: 0;
+  color: #e4e4e4;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.photo-focus-frame__upload-divider {
+  width: 1px;
+  align-self: stretch;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.photo-focus-frame__cancel-add {
+  margin-top: 1rem;
+  padding: 0.4rem 1rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 9999px;
+  background: transparent;
+  color: #9a9a9a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.photo-focus-frame__cancel-add:hover,
+.photo-focus-frame__cancel-add:focus-visible {
+  color: #e4e4e4;
+}
+
+.photo-focus-frame__add-photos {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0.5rem 1.05rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 9999px;
+  background-color: rgba(26, 26, 26, 0.92);
+  color: #c8c8c8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.photo-focus-frame__add-photos:hover,
+.photo-focus-frame__add-photos:focus-visible {
+  color: var(--yellow-bright, #f5c518);
+  border-color: var(--yellow-bright, #f5c518);
+}
+
 @media (max-width: 640px) {
   .photo-focus-frame__panel {
     top: auto;
     left: 1.25rem;
     right: 1.25rem;
     bottom: 4.5rem;
-    height: min(38vh, 20rem);
+    height: min(42vh, 22rem);
     border-radius: 1.35rem;
   }
 
   .photo-focus-frame__title {
-    font-size: 1rem;
+    font-size: 1.15rem;
+  }
+
+  .photo-focus-frame__title-image {
+    height: 1.1rem;
   }
 
   .photo-focus-frame__grid {
     gap: 0.4rem;
+  }
+
+  .photo-focus-frame__upload-options {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .photo-focus-frame__upload-divider {
+    width: 4rem;
+    height: 1px;
   }
 }

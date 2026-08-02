@@ -26,6 +26,7 @@ import {
   applyPhotoFocusFrameProgress,
   computeFlatPhotoFocusTransform,
   flatPhotoFocusTransformString,
+  photoFocusFillColor,
   type PhotoFocusTransform,
 } from '../lib/photoFocus';
 import {
@@ -442,6 +443,8 @@ export function WorldMap({
     territories: CountryTerritory[];
     progress: number;
     transform: PhotoFocusTransform;
+    /** Fill color when focus starts (yellow or bright grey). */
+    startFill: string;
   } | null>(null);
   const photoFocusRafRef = useRef(0);
   const photoFocusRef = useRef(photoFocus);
@@ -1049,11 +1052,13 @@ export function WorldMap({
       }
 
       const startedAt = performance.now();
+      const startFill = isVisited(countryId) ? COLORS.yellow : COLORS.hover;
       const base = {
         countryId,
         territoryId: mainland.id,
         territories,
         transform,
+        startFill,
       };
       photoFocusRef.current = { ...base, progress: 0 };
       setPhotoFocus({ ...base, progress: 0 });
@@ -1071,6 +1076,7 @@ export function WorldMap({
           containerRef.current,
           progress,
           transform,
+          startFill,
         );
         if (progress < 1) {
           photoFocusRafRef.current = requestAnimationFrame(tick);
@@ -1086,6 +1092,7 @@ export function WorldMap({
       countryFeatures,
       dimensions.height,
       dimensions.width,
+      isVisited,
       mapCenter,
       mapProjection,
       showRegionalView,
@@ -1149,6 +1156,7 @@ export function WorldMap({
       {photoFocus && (
         <>
           <PhotoFocusFrame
+            countryId={photoFocus.countryId}
             countryName={
               countryNameById.get(photoFocus.countryId) ?? photoFocus.countryId
             }
@@ -1271,7 +1279,7 @@ export function WorldMap({
                       const fillStyle = {
                         ...countryFillStyle(
                           visited,
-                          isHighlighted || isFocusCountry,
+                          isHighlighted,
                         ),
                         cursor: isPhotoFocusing ? 'default' : 'pointer',
                         opacity,
@@ -1302,6 +1310,13 @@ export function WorldMap({
                           ...countryBorderStyle(BORDER_WIDTH),
                           opacity: 1,
                         };
+                        const focusFillStyle = {
+                          ...fillStyle,
+                          fill: photoFocusFillColor(
+                            photoFocus.startFill,
+                            photoFocus.progress,
+                          ),
+                        };
 
                         return (
                           <g
@@ -1327,8 +1342,9 @@ export function WorldMap({
                             {activeFocusTerritoryPath ? (
                               <g data-photo-focus-transform transform={transform}>
                                 <path
+                                  data-photo-focus-fill
                                   d={activeFocusTerritoryPath}
-                                  style={fillStyle}
+                                  style={focusFillStyle}
                                 />
                                 <path
                                   d={activeFocusTerritoryPath}

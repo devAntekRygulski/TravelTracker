@@ -1,0 +1,118 @@
+.photo-upload-qr {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.photo-upload-qr__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.photo-upload-qr__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  max-width: 20rem;
+  padding: 1.4rem 1.6rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 1.1rem;
+  background: #1e1e1e;
+  text-align: center;
+}
+
+.photo-upload-qr__heading {
+  margin: 0;
+  color: #e4e4e4;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.photo-upload-qr__hint {
+  margin: 0;
+  color: #9a9a9a;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.photo-upload-qr__error {
+  margin: 0;
+  color: #e08585;
+  font-size: 0.82rem;
+}
+
+.photo-upload-qr__code {
+  position: relative;
+  padding: 0.5rem;
+  border-radius: 0.75rem;
+  background: #ffffff;
+  line-height: 0;
+}
+
+.photo-upload-qr__expired {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  background: rgba(20, 20, 20, 0.82);
+  color: #e4e4e4;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.photo-upload-qr__timer {
+  margin: 0;
+  color: #9a9a9a;
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.photo-upload-qr__actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.photo-upload-qr__button {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 9999px;
+  background: rgba(26, 26, 26, 0.88);
+  color: #c8c8c8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.photo-upload-qr__button:hover,
+.photo-upload-qr__button:focus-visible {
+  color: var(--yellow-bright, #f5c518);
+}
+
+.photo-upload-qr__button--primary {
+  border-color: var(--yellow-bright, #f5c518);
+  color: var(--yellow-bright, #f5c518);
+}
+
+.photo-upload-qr__button--primary:hover,
+.photo-upload-qr__button--primary:focus-visible {
+  color: #ffdf66;
+}

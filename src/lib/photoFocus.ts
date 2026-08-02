@@ -130,11 +130,51 @@ export function flatPhotoFocusTransformString(
   return `translate(${dx},${dy}) translate(${focus.cx},${focus.cy}) scale(${scale}) translate(${-focus.cx},${-focus.cy})`;
 }
 
+/** Unvisited / unfocused country fill on the map. */
+export const PHOTO_FOCUS_BASE_FILL = '#2a2a2a';
+
+function parseHexColor(hex: string): { r: number; g: number; b: number } {
+  const raw = hex.replace('#', '');
+  const full =
+    raw.length === 3
+      ? raw
+          .split('')
+          .map((ch) => ch + ch)
+          .join('')
+      : raw;
+  return {
+    r: Number.parseInt(full.slice(0, 2), 16),
+    g: Number.parseInt(full.slice(2, 4), 16),
+    b: Number.parseInt(full.slice(4, 6), 16),
+  };
+}
+
+/** Interpolate two #RRGGBB colors by t in [0, 1]. */
+export function lerpHexColor(from: string, to: string, t: number): string {
+  const a = parseHexColor(from);
+  const b = parseHexColor(to);
+  const x = Math.min(1, Math.max(0, t));
+  const r = Math.round(lerp(a.r, b.r, x));
+  const g = Math.round(lerp(a.g, b.g, x));
+  const bl = Math.round(lerp(a.b, b.b, x));
+  return `rgb(${r}, ${g}, ${bl})`;
+}
+
+/** Focused-country fill: start color → base grey over focus progress. */
+export function photoFocusFillColor(startFill: string, progress: number): string {
+  return lerpHexColor(
+    startFill,
+    PHOTO_FOCUS_BASE_FILL,
+    easeInOutCubic(progress),
+  );
+}
+
 /** Drive focus visuals without React re-renders (call from rAF). */
 export function applyPhotoFocusFrameProgress(
   root: ParentNode | null,
   progress: number,
   transform: PhotoFocusTransform | null = null,
+  startFill: string | null = null,
 ): void {
   if (!root) return;
 
@@ -151,6 +191,13 @@ export function applyPhotoFocusFrameProgress(
         flatPhotoFocusTransformString(transform, progress),
       );
     }
+  }
+
+  if (startFill) {
+    const fill = photoFocusFillColor(startFill, progress);
+    root.querySelectorAll('[data-photo-focus-fill]').forEach((node) => {
+      (node as HTMLElement | SVGElement).style.fill = fill;
+    });
   }
 
   const frame = root.querySelector(

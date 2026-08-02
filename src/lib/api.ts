@@ -22,6 +22,37 @@ interface VisitedRegionsResponse {
   visitedRegions: string[];
 }
 
+export interface CountryPhoto {
+  id: string;
+  countryId: string;
+  url: string;
+  contentType: string;
+  size: number;
+  createdAt: string;
+}
+
+interface PhotosResponse {
+  photos: CountryPhoto[];
+}
+
+export interface UploadSessionInfo {
+  countryId: string;
+  countryName: string;
+  expiresAt: string;
+}
+
+export interface CreatedUploadSession {
+  token: string;
+  expiresAt: string;
+  uploadUrl: string;
+}
+
+export interface PendingSessionPhoto {
+  id: string;
+  contentType: string;
+  size: number;
+}
+
 interface ApiError {
   message: string;
 }
@@ -56,7 +87,12 @@ async function request<T>(
 ): Promise<T> {
   const headers = new Headers(options.headers);
 
-  if (!headers.has('Content-Type') && options.body) {
+  // FormData bodies must let the browser set the multipart boundary itself.
+  if (
+    !headers.has('Content-Type') &&
+    options.body &&
+    !(options.body instanceof FormData)
+  ) {
     headers.set('Content-Type', 'application/json');
   }
 
@@ -140,5 +176,87 @@ export const api = {
       method: 'PUT',
       body: JSON.stringify({ visitedRegions }),
     }, token);
+  },
+
+  getCountryPhotos(token: string, countryId: string) {
+    return request<PhotosResponse>(`/photos/${countryId}`, {}, token);
+  },
+
+  uploadCountryPhotos(token: string, countryId: string, files: File[]) {
+    const body = new FormData();
+
+    for (const file of files) {
+      body.append('photos', file);
+    }
+
+    return request<PhotosResponse>(`/photos/${countryId}`, {
+      method: 'POST',
+      body,
+    }, token);
+  },
+
+  deleteCountryPhoto(token: string, photoId: string) {
+    return request<{ deleted: boolean }>(`/photos/${photoId}`, {
+      method: 'DELETE',
+    }, token);
+  },
+
+  createUploadSession(token: string, countryId: string, countryName: string) {
+    return request<CreatedUploadSession>(`/photos/${countryId}/upload-session`, {
+      method: 'POST',
+      body: JSON.stringify({ countryName }),
+    }, token);
+  },
+
+  getUploadSession(sessionToken: string) {
+    return request<UploadSessionInfo>(`/photos/session/${sessionToken}`);
+  },
+
+  uploadSessionPhotos(sessionToken: string, files: File[]) {
+    const body = new FormData();
+
+    for (const file of files) {
+      body.append('photos', file);
+    }
+
+    return request<PhotosResponse>(`/photos/session/${sessionToken}`, {
+      method: 'POST',
+      body,
+    });
+  },
+
+  createGuestUploadSession(countryId: string, countryName: string) {
+    return request<CreatedUploadSession>('/photos/guest-session', {
+      method: 'POST',
+      body: JSON.stringify({ countryId, countryName }),
+    });
+  },
+
+  getPendingSessionPhotos(sessionToken: string) {
+    return request<{ photos: PendingSessionPhoto[] }>(
+      `/photos/session/${sessionToken}/pending`,
+    );
+  },
+
+  async downloadPendingSessionPhoto(
+    sessionToken: string,
+    photoId: string,
+  ): Promise<Blob> {
+    const response = await fetch(
+      `${API_BASE}/photos/session/${sessionToken}/pending/${photoId}`,
+    );
+
+    if (!response.ok) {
+      throw new Error('Failed to download photo');
+    }
+
+    return response.blob();
+  },
+
+  deletePendingSessionPhoto(sessionToken: string, photoId: string) {
+    return request<{ deleted: boolean }>(
+      `/photos/session/${sessionToken}/pending/${photoId}`,
+      { method: 'DELETE' },
+    );
   },
 };

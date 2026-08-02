@@ -6,15 +6,16 @@
   "scripts": {
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "dev:client": "vite",
-    "dev:server": "tsx watch server/index.ts",
+    "dev:server": "tsx watch --use-system-ca server/index.ts",
     "build": "tsc -b && vite build",
     "build:regions": "node scripts/build-region-data.mjs",
     "validate:borders": "node scripts/validate-borders.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "tsx server/index.ts"
+    "start": "tsx --use-system-ca server/index.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1100.0",
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "d3-geo": "^3.1.1",
@@ -22,7 +23,9 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.16.1",
+    "multer": "^2.2.0",
     "prop-types": "^15.8.1",
+    "qrcode": "^1.5.4",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-router-dom": "^7.18.0",
@@ -36,7 +39,9 @@
     "@types/express": "^5.0.3",
     "@types/geojson": "^7946.0.16",
     "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.2.0",
     "@types/node": "^24.12.3",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/react-simple-maps": "^3.0.6",

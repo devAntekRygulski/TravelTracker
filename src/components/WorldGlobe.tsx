@@ -17,6 +17,7 @@ import {
   getPhotoFocusSafeRect,
   lerp,
   lerpLongitude,
+  photoFocusFillColor,
 } from '../lib/photoFocus';
 import {
   getCountryTerritories,
@@ -287,6 +288,7 @@ export function WorldGlobe({
     territoryId: string;
     territories: CountryTerritory[];
     progress: number;
+    startFill: string;
   } | null>(null);
   const photoFocusRafRef = useRef<number | null>(null);
   const photoFocusRestoreRef = useRef<{
@@ -306,6 +308,8 @@ export function WorldGlobe({
     territoryId: string;
     territories: CountryTerritory[];
     progress: number;
+    /** Fill color when focus starts (yellow or bright grey). */
+    startFill: string;
   } | null>(null);
   const [hoverTooltip, setHoverTooltip] = useState<{
     label: string | null;
@@ -560,8 +564,7 @@ export function WorldGlobe({
       ctx.stroke();
     }
 
-    if (focusTerritory && focusCountryId) {
-      const visited = visitedOf(focusCountryId);
+    if (focusTerritory && focusCountryId && focus) {
       ctx.globalAlpha = 1;
       ctx.beginPath();
       path(focusTerritory);
@@ -569,7 +572,7 @@ export function WorldGlobe({
       ctx.lineWidth = COUNTRY_GAP;
       ctx.lineJoin = 'round';
       ctx.stroke();
-      ctx.fillStyle = visited ? COLORS.yellow : COLORS.hover;
+      ctx.fillStyle = photoFocusFillColor(focus.startFill, focus.progress);
       ctx.fill();
       ctx.beginPath();
       path(focusTerritory);
@@ -1028,10 +1031,12 @@ export function WorldGlobe({
     }
 
     const startedAt = performance.now();
+    const startFill = isVisited(countryId) ? COLORS.yellow : COLORS.hover;
     const base = {
       countryId,
       territoryId: mainland.id,
       territories,
+      startFill,
     };
     const initial = { ...base, progress: 0 };
     photoFocusRef.current = initial;
@@ -1143,6 +1148,7 @@ export function WorldGlobe({
       {photoFocus && (
         <>
           <PhotoFocusFrame
+            countryId={photoFocus.countryId}
             countryName={
               countryNameByIdRef.current.get(photoFocus.countryId) ??
               photoFocus.countryId

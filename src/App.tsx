@@ -5,6 +5,7 @@ import { LoginPage } from './pages/LoginPage';
 import { LoginFormPage } from './pages/LoginFormPage';
 import { SignupPage } from './pages/SignupPage';
 import { MapPage } from './pages/MapPage';
+import { UploadPage } from './pages/UploadPage';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/upload/:token" element={<UploadPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

@@ -4,13 +4,8 @@ export type SamplePhoto = {
   alt: string;
 };
 
-/** Placeholder trip photos shown for every country in add-photos mode. */
+/** Placeholder trip photos shown behind the first-upload blur overlay. */
 export const SAMPLE_PHOTOS: SamplePhoto[] = [
-  {
-    id: 'waterfall',
-    src: '/sample-photos/waterfall-3.jpg',
-    alt: 'Waterfall in nature',
-  },
   {
     id: 'forest',
     src: '/sample-photos/forest.jpg',
@@ -27,11 +22,6 @@ export const SAMPLE_PHOTOS: SamplePhoto[] = [
     alt: 'Sandy beach shoreline',
   },
   {
-    id: 'road',
-    src: '/sample-photos/road.jpg',
-    alt: 'Open road through hills',
-  },
-  {
     id: 'food',
     src: '/sample-photos/food.jpg',
     alt: 'Local meal on a table',
@@ -39,6 +29,16 @@ export const SAMPLE_PHOTOS: SamplePhoto[] = [
   {
     id: 'desert',
     src: '/sample-photos/desert.jpg',
-    alt: 'Sand dunes in a desert',
+    alt: 'Desert landscape',
+  },
+  {
+    id: 'road',
+    src: '/sample-photos/road.jpg',
+    alt: 'Open road trip',
+  },
+  {
+    id: 'waterfall',
+    src: '/sample-photos/waterfall-3.jpg',
+    alt: 'Waterfall in nature',
   },
 ];
