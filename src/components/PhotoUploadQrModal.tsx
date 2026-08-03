@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
 import { addGuestPhotos } from '../lib/guestPhotos';
+import { UploadQrLinkHelp } from './UploadQrLinkHelp';
 import './PhotoUploadQrModal.css';
 
 interface PhotoUploadQrModalProps {
@@ -188,6 +189,7 @@ export function PhotoUploadQrModal({
                 ? 'This code has expired.'
                 : `Expires in ${formatRemaining(remainingMs)}`}
             </p>
+            <UploadQrLinkHelp uploadUrl={session.uploadUrl} />
           </>
         ) : (
           <p className="photo-upload-qr__hint">Generating code…</p>

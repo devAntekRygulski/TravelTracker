@@ -25,8 +25,9 @@ interface CountryPhotosState {
  * guests read/write browser IndexedDB (object URLs, revoked on cleanup).
  */
 export function useCountryPhotos(countryId: string) {
-  const { token } = useAuth();
-  const galleryKey = `${token ?? 'guest'}|${countryId}`;
+  const { token, isGuest } = useAuth();
+  const useGuestStorage = isGuest || !token;
+  const galleryKey = `${useGuestStorage ? 'guest' : token}|${countryId}`;
   const [state, setState] = useState<CountryPhotosState>({
     key: galleryKey,
     photos: [],
@@ -50,7 +51,7 @@ export function useCountryPhotos(countryId: string) {
 
   const refresh = useCallback(async () => {
     try {
-      if (token) {
+      if (!useGuestStorage && token) {
         const { photos } = await api.getCountryPhotos(token, countryId);
 
         setState({
@@ -81,7 +82,7 @@ export function useCountryPhotos(countryId: string) {
         error: error instanceof Error ? error.message : 'Failed to load photos',
       });
     }
-  }, [token, countryId, galleryKey, revokeObjectUrls]);
+  }, [useGuestStorage, token, countryId, galleryKey, revokeObjectUrls]);
 
   useEffect(() => {
     async function load() {
@@ -99,7 +100,7 @@ export function useCountryPhotos(countryId: string) {
         return;
       }
 
-      if (token) {
+      if (!useGuestStorage && token) {
         await api.uploadCountryPhotos(token, countryId, files);
       } else {
         await addGuestPhotos(countryId, files);
@@ -107,12 +108,12 @@ export function useCountryPhotos(countryId: string) {
 
       await refresh();
     },
-    [token, countryId, refresh],
+    [useGuestStorage, token, countryId, refresh],
   );
 
   const remove = useCallback(
     async (photoId: string) => {
-      if (token) {
+      if (!useGuestStorage && token) {
         await api.deleteCountryPhoto(token, photoId);
       } else {
         await deleteGuestPhoto(photoId);
@@ -120,7 +121,7 @@ export function useCountryPhotos(countryId: string) {
 
       await refresh();
     },
-    [token, refresh],
+    [useGuestStorage, token, refresh],
   );
 
   return {

@@ -298,9 +298,10 @@
   position: relative;
   z-index: 1;
   display: flex;
-  align-items: stretch;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 1.75rem;
+  gap: 1rem;
   max-width: 100%;
 }
 
@@ -310,7 +311,6 @@
   align-items: center;
   justify-content: center;
   gap: 0.75rem;
-  min-width: 11rem;
 }
 
 .photo-focus-frame__upload-label {
@@ -324,9 +324,26 @@
 }
 
 .photo-focus-frame__upload-divider {
-  width: 1px;
-  align-self: stretch;
-  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: min(14rem, 70vw);
+}
+
+.photo-focus-frame__upload-divider-line {
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+.photo-focus-frame__upload-divider-text {
+  flex-shrink: 0;
+  color: #9a9a9a;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: lowercase;
 }
 
 .photo-focus-frame__cancel-add {
@@ -394,14 +411,7 @@
     gap: 0.4rem;
   }
 
-  .photo-focus-frame__upload-options {
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-  }
-
   .photo-focus-frame__upload-divider {
-    width: 4rem;
-    height: 1px;
+    width: min(12rem, 80vw);
   }
 }

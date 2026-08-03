@@ -8,6 +8,7 @@ import {
 import { isValidObjectId } from 'mongoose';
 import multer from 'multer';
 import { connectDB } from '../config/db.js';
+import { getClientBaseUrl } from '../lib/clientUrl.js';
 import { deletePhotoObject, getPhotoObjectUrl, putPhotoObject } from '../lib/s3.js';
 import { requireAuth, type AuthRequest } from '../middleware/auth.js';
 import { PendingPhoto } from '../models/PendingPhoto.js';
@@ -17,19 +18,14 @@ import { UploadSession } from '../models/UploadSession.js';
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 const MAX_FILES_PER_REQUEST = 10;
 const MAX_PHOTOS_PER_COUNTRY = 50;
-const SESSION_TTL_MS = 15 * 60 * 1000;
+const SESSION_TTL_MS = 60 * 60 * 1000;
 // Guest relay photos linger a bit longer than the session so a slow desktop
 // can still claim uploads made right before expiry.
-const PENDING_PHOTO_TTL_MS = 30 * 60 * 1000;
+const PENDING_PHOTO_TTL_MS = 2 * 60 * 60 * 1000;
 const MAX_PENDING_PER_SESSION = 50;
 
 function buildUploadUrl(token: string): string {
-  const clientUrl = (process.env.CLIENT_URL ?? 'http://localhost:5173').replace(
-    /\/+$/,
-    '',
-  );
-
-  return `${clientUrl}/upload/${token}`;
+  return `${getClientBaseUrl()}/upload/${token}`;
 }
 
 const EXTENSION_BY_MIME: Record<string, string> = {
@@ -152,10 +148,57 @@ router.get('/session/:token', async (req: Request, res: Response) => {
       countryId: session.countryId,
       countryName: session.countryName,
       expiresAt: session.expiresAt,
+      uploadUrl: buildUploadUrl(session.token),
     });
   } catch (error) {
     console.error('Get upload session error:', error);
     res.status(500).json({ message: 'Failed to fetch upload session' });
+  }
+});
+
+// Guest recovery: list guest sessions that still have unclaimed photos.
+// Includes recently expired sessions so the laptop can still claim uploads.
+router.get('/guest-pending/:countryId', async (req: Request, res: Response) => {
+  try {
+    await connectDB();
+
+    const countryId = String(req.params.countryId ?? '').trim();
+    if (!countryId) {
+      res.status(400).json({ message: 'countryId is required' });
+      return;
+    }
+
+    const sessions = await UploadSession.find({
+      countryId,
+      isGuest: true,
+    })
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    const withPending: {
+      token: string;
+      expiresAt: Date;
+      count: number;
+    }[] = [];
+
+    for (const session of sessions) {
+      const count = await PendingPhoto.countDocuments({
+        sessionToken: session.token,
+      });
+
+      if (count > 0) {
+        withPending.push({
+          token: session.token,
+          expiresAt: session.expiresAt,
+          count,
+        });
+      }
+    }
+
+    res.json({ sessions: withPending });
+  } catch (error) {
+    console.error('List guest pending sessions error:', error);
+    res.status(500).json({ message: 'Failed to list pending guest uploads' });
   }
 });
 
@@ -244,15 +287,25 @@ router.get(
       await connectDB();
 
       const session = await UploadSession.findOne({ token: req.params.token });
+      const pending = await PendingPhoto.find({ sessionToken: req.params.token })
+        .select('-data')
+        .sort({ createdAt: 1 });
 
-      if (!session || session.expiresAt.getTime() <= Date.now()) {
+      // Guest claim can continue after the QR session timer expires, as long as
+      // relay photos are still in MongoDB.
+      if (!session && pending.length === 0) {
         res.status(404).json({ message: 'Upload session not found or expired' });
         return;
       }
 
-      const pending = await PendingPhoto.find({ sessionToken: session.token })
-        .select('-data')
-        .sort({ createdAt: 1 });
+      if (
+        session &&
+        !session.isGuest &&
+        session.expiresAt.getTime() <= Date.now()
+      ) {
+        res.status(404).json({ message: 'Upload session not found or expired' });
+        return;
+      }
 
       res.json({
         photos: pending.map((photo) => ({
@@ -289,8 +342,18 @@ router.get(
         return;
       }
 
-      res.set('Content-Type', pending.contentType);
-      res.send(pending.data);
+      const raw = pending.data as Buffer | { buffer?: ArrayBuffer };
+      const buffer = Buffer.isBuffer(raw)
+        ? raw
+        : Buffer.from(
+            (raw as { buffer?: ArrayBuffer }).buffer ?? (raw as ArrayBuffer),
+          );
+
+      res.status(200);
+      res.setHeader('Content-Type', pending.contentType || 'application/octet-stream');
+      res.setHeader('Content-Length', String(buffer.length));
+      res.setHeader('Cache-Control', 'no-store');
+      res.end(buffer);
     } catch (error) {
       console.error('Download pending photo error:', error);
       res.status(500).json({ message: 'Failed to download pending photo' });

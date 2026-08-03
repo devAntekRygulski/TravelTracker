@@ -5,8 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
-    "dev:client": "vite",
+    "dev:client": "vite --host",
     "dev:server": "tsx watch --use-system-ca server/index.ts",
+    "tunnel": "node scripts/public-tunnel.mjs",
     "build": "tsc -b && vite build",
     "build:regions": "node scripts/build-region-data.mjs",
     "validate:borders": "node scripts/validate-borders.mjs",

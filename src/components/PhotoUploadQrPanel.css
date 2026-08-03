@@ -54,21 +54,3 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
-
-.photo-upload-qr-panel__refresh {
-  margin: 0;
-  padding: 0.35rem 0.85rem;
-  border: 1px solid #4a4a4a;
-  border-radius: 9999px;
-  background: rgba(26, 26, 26, 0.88);
-  color: #c8c8c8;
-  font-size: 0.72rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: color 0.15s ease;
-}
-
-.photo-upload-qr-panel__refresh:hover,
-.photo-upload-qr-panel__refresh:focus-visible {
-  color: var(--yellow-bright, #f5c518);
-}

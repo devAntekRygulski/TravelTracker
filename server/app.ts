@@ -10,7 +10,8 @@ export function createApp(): Express {
 
   app.use(
     cors({
-      origin: process.env.CLIENT_URL ?? true,
+      // Reflect the request Origin so phone LAN URLs work alongside localhost.
+      origin: true,
       credentials: true,
     }),
   );

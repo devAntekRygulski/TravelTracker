@@ -1,0 +1,42 @@
+.upload-qr-link-help {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-width: 16rem;
+}
+
+.upload-qr-link-help__note {
+  margin: 0;
+  color: #9a9a9a;
+  font-size: 0.68rem;
+  line-height: 1.35;
+  text-align: center;
+}
+
+.upload-qr-link-help__note strong {
+  color: #f5c518;
+  font-weight: 600;
+}
+
+.upload-qr-link-help__url {
+  color: #f5c518;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  word-break: break-all;
+  text-align: center;
+}
+
+.upload-qr-link-help__copy {
+  align-self: center;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid #f5c518;
+  border-radius: 999px;
+  background: transparent;
+  color: #f5c518;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.upload-qr-link-help__copy:hover {
+  background: rgba(245, 197, 24, 0.12);
+}

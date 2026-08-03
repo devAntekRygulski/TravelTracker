@@ -2,6 +2,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { getCountryNameImageSrc } from '../data/countryNameImages';
 import { SAMPLE_PHOTOS } from '../data/samplePhotos';
 import { useCountryPhotos } from '../hooks/useCountryPhotos';
+import { useGuestPendingClaim } from '../hooks/useGuestPendingClaim';
+import { claimGuestPendingPhotos } from '../lib/guestUploadSession';
 import { easeInOutCubic } from '../lib/photoFocus';
 import { PhotoUploadQrPanel } from './PhotoUploadQrPanel';
 import './PhotoFocusFrame.css';
@@ -61,6 +63,7 @@ export function PhotoFocusFrame({
   const { photos, loading, error, upload, remove, refresh } =
     useCountryPhotos(countryId);
   const [uploading, setUploading] = useState(false);
+  const [syncingPhone, setSyncingPhone] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   /** True when the user opens "Add photos" over an existing gallery. */
   const [addingMore, setAddingMore] = useState(false);
@@ -139,9 +142,39 @@ export function PhotoFocusFrame({
   };
 
   const handlePhonePhotosChanged = useCallback(() => {
-    void refresh();
-    setAddingMore(false);
+    void (async () => {
+      await refresh();
+      setAddingMore(false);
+    })();
   }, [refresh]);
+
+  useGuestPendingClaim(countryId, handlePhonePhotosChanged);
+
+  const handleSyncPhonePhotos = async () => {
+    setSyncingPhone(true);
+    setActionError(null);
+
+    try {
+      const claimed = await claimGuestPendingPhotos(countryId);
+      await refresh();
+
+      if (claimed === 0) {
+        setActionError(
+          'No new phone photos found yet. Keep this panel open after uploading.',
+        );
+      } else {
+        setAddingMore(false);
+      }
+    } catch (syncError) {
+      setActionError(
+        syncError instanceof Error
+          ? syncError.message
+          : 'Failed to sync phone photos',
+      );
+    } finally {
+      setSyncingPhone(false);
+    }
+  };
 
   const handleDelete = async (photoId: string) => {
     setActionError(null);
@@ -279,7 +312,11 @@ export function PhotoFocusFrame({
                   </button>
                 </div>
 
-                <div className="photo-focus-frame__upload-divider" aria-hidden />
+                <div className="photo-focus-frame__upload-divider" role="separator">
+                  <span className="photo-focus-frame__upload-divider-line" />
+                  <span className="photo-focus-frame__upload-divider-text">or</span>
+                  <span className="photo-focus-frame__upload-divider-line" />
+                </div>
 
                 <PhotoUploadQrPanel
                   key={`${countryId}-upload`}
@@ -287,6 +324,15 @@ export function PhotoFocusFrame({
                   countryName={countryName}
                   onPhotosChanged={handlePhonePhotosChanged}
                 />
+
+                <button
+                  type="button"
+                  className="photo-focus-frame__action"
+                  disabled={syncingPhone}
+                  onClick={() => void handleSyncPhonePhotos()}
+                >
+                  {syncingPhone ? 'Syncing…' : 'Sync phone photos'}
+                </button>
               </div>
 
               {(actionError ?? error) && (

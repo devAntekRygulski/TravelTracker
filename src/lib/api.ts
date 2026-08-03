@@ -39,6 +39,7 @@ export interface UploadSessionInfo {
   countryId: string;
   countryName: string;
   expiresAt: string;
+  uploadUrl: string;
 }
 
 export interface CreatedUploadSession {
@@ -57,7 +58,27 @@ interface ApiError {
   message: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_URL ?? '/api';
+function resolveApiBase(): string {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+
+  // On the laptop in local dev, call Express directly so large guest photo
+  // downloads are not broken by the Vite proxy.
+  // On a phone via Cloudflare tunnel / LAN IP, use same-origin `/api` so the
+  // request goes through the tunnel (phone localhost is not your PC).
+  if (import.meta.env.DEV && typeof window !== 'undefined') {
+    const host = window.location.hostname;
+    if (host === 'localhost' || host === '127.0.0.1') {
+      return 'http://localhost:3001/api';
+    }
+  }
+
+  return '/api';
+}
+
+const API_BASE = resolveApiBase();
+
 
 function getErrorMessage(data: unknown, response: Response, rawBody: string): string {
   if (
@@ -212,6 +233,12 @@ export const api = {
     return request<UploadSessionInfo>(`/photos/session/${sessionToken}`);
   },
 
+  listGuestPendingSessions(countryId: string) {
+    return request<{
+      sessions: Array<{ token: string; expiresAt: string; count: number }>;
+    }>(`/photos/guest-pending/${countryId}`);
+  },
+
   uploadSessionPhotos(sessionToken: string, files: File[]) {
     const body = new FormData();
 
@@ -250,7 +277,11 @@ export const api = {
       throw new Error('Failed to download photo');
     }
 
-    return response.blob();
+    const buffer = await response.arrayBuffer();
+    const contentType =
+      response.headers.get('content-type') ?? 'application/octet-stream';
+
+    return new Blob([buffer], { type: contentType });
   },
 
   deletePendingSessionPhoto(sessionToken: string, photoId: string) {

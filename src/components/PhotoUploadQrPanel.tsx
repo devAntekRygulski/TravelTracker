@@ -1,8 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
-import { addGuestPhotos } from '../lib/guestPhotos';
+import {
+  rememberGuestUploadSession,
+  restoreGuestUploadSession,
+} from '../lib/guestUploadSession';
+import { UploadQrLinkHelp } from './UploadQrLinkHelp';
 import './PhotoUploadQrPanel.css';
 
 interface PhotoUploadQrPanelProps {
@@ -18,8 +22,6 @@ interface SessionState {
   expiresAt: number;
 }
 
-const REFRESH_POLL_MS = 5000;
-
 function formatRemaining(ms: number): string {
   const totalSeconds = Math.max(0, Math.floor(ms / 1000));
   const minutes = Math.floor(totalSeconds / 60);
@@ -34,41 +36,69 @@ export function PhotoUploadQrPanel({
   countryName,
   onPhotosChanged,
 }: PhotoUploadQrPanelProps) {
-  const { token } = useAuth();
+  const { token, isGuest } = useAuth();
   const [session, setSession] = useState<SessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const knownCountRef = useRef<number | null>(null);
-
-  const createSession = useCallback(async () => {
-    try {
-      const created = token
-        ? await api.createUploadSession(token, countryId, countryName)
-        : await api.createGuestUploadSession(countryId, countryName);
-
-      setSession({
-        token: created.token,
-        uploadUrl: created.uploadUrl,
-        expiresAt: new Date(created.expiresAt).getTime(),
-      });
-      setError(null);
-    } catch (sessionError) {
-      setError(
-        sessionError instanceof Error
-          ? sessionError.message
-          : 'Failed to create upload session',
-      );
-    }
-  }, [token, countryId, countryName]);
+  const useGuestSession = isGuest || !token;
 
   useEffect(() => {
+    let cancelled = false;
+
     async function start() {
-      await createSession();
+      try {
+        if (useGuestSession) {
+          const restored = await restoreGuestUploadSession(countryId);
+          if (cancelled) return;
+          if (restored) {
+            setSession({
+              token: restored.token,
+              uploadUrl: restored.uploadUrl,
+              expiresAt: new Date(restored.expiresAt).getTime(),
+            });
+            setError(null);
+            return;
+          }
+        }
+
+        if (cancelled) return;
+
+        const created = useGuestSession
+          ? await api.createGuestUploadSession(countryId, countryName)
+          : await api.createUploadSession(token!, countryId, countryName);
+
+        if (cancelled) return;
+
+        const expiresAt = new Date(created.expiresAt).getTime();
+
+        if (useGuestSession) {
+          rememberGuestUploadSession(countryId, created.token, expiresAt);
+        }
+
+        setSession({
+          token: created.token,
+          uploadUrl: created.uploadUrl,
+          expiresAt,
+        });
+        setError(null);
+      } catch (sessionError) {
+        if (cancelled) return;
+        setError(
+          sessionError instanceof Error
+            ? sessionError.message
+            : 'Failed to create upload session',
+        );
+      }
     }
 
     void start();
-  }, [createSession]);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [useGuestSession, token, countryId, countryName]);
 
   useEffect(() => {
     if (!session || !canvasRef.current) return;
@@ -90,46 +120,26 @@ export function PhotoUploadQrPanel({
     return () => window.clearInterval(tick);
   }, []);
 
+  // Logged-in users: poll cloud gallery count while the QR is visible.
   useEffect(() => {
-    if (!session) return;
+    if (!session || useGuestSession || !token) return;
 
     let cancelled = false;
     let busy = false;
 
     async function sync() {
       if (busy || cancelled) return;
-
       busy = true;
 
       try {
-        if (token) {
-          const { photos } = await api.getCountryPhotos(token, countryId);
-          const previous = knownCountRef.current;
+        const { photos } = await api.getCountryPhotos(token!, countryId);
+        const previous = knownCountRef.current;
 
-          if (previous === null) {
-            knownCountRef.current = photos.length;
-          } else if (photos.length > previous) {
-            knownCountRef.current = photos.length;
-            onPhotosChanged();
-          }
-        } else {
-          const { photos } = await api.getPendingSessionPhotos(session!.token);
-
-          for (const pending of photos) {
-            if (cancelled) break;
-
-            const blob = await api.downloadPendingSessionPhoto(
-              session!.token,
-              pending.id,
-            );
-
-            await addGuestPhotos(countryId, [blob]);
-            await api.deletePendingSessionPhoto(session!.token, pending.id);
-          }
-
-          if (photos.length > 0 && !cancelled) {
-            onPhotosChanged();
-          }
+        if (previous === null) {
+          knownCountRef.current = photos.length;
+        } else if (photos.length > previous) {
+          knownCountRef.current = photos.length;
+          onPhotosChanged();
         }
       } catch {
         // Transient poll errors — next interval retries.
@@ -138,13 +148,14 @@ export function PhotoUploadQrPanel({
       busy = false;
     }
 
-    const poll = window.setInterval(() => void sync(), REFRESH_POLL_MS);
+    void sync();
+    const poll = window.setInterval(() => void sync(), 5000);
 
     return () => {
       cancelled = true;
       window.clearInterval(poll);
     };
-  }, [session, token, countryId, onPhotosChanged]);
+  }, [session, useGuestSession, token, countryId, onPhotosChanged]);
 
   const remainingMs = session ? session.expiresAt - now : 0;
   const expired = session !== null && remainingMs <= 0;
@@ -168,22 +179,11 @@ export function PhotoUploadQrPanel({
               ? 'Code expired'
               : `Expires in ${formatRemaining(remainingMs)}`}
           </p>
+          <UploadQrLinkHelp uploadUrl={session.uploadUrl} />
         </>
       ) : (
         <p className="photo-upload-qr-panel__hint">Generating code…</p>
       )}
-
-      <button
-        type="button"
-        className="photo-upload-qr-panel__refresh"
-        onClick={() => {
-          setSession(null);
-          setError(null);
-          void createSession();
-        }}
-      >
-        New code
-      </button>
     </div>
   );
 }

@@ -37,15 +37,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
 
+      // Guest mode wins over a stale in-flight /me restore.
+      if (sessionStorage.getItem('guestMode') === 'true') {
+        if (!cancelled) {
+          setStoredToken(null);
+          setToken(null);
+          setUser(null);
+          setIsGuest(true);
+          setIsLoading(false);
+        }
+        return;
+      }
+
       try {
         const { user: currentUser } = await api.me(storedToken);
 
-        if (!cancelled) {
-          setToken(storedToken);
-          setUser(currentUser);
-          setIsGuest(false);
-          sessionStorage.removeItem('guestMode');
+        if (cancelled) {
+          return;
         }
+
+        if (sessionStorage.getItem('guestMode') === 'true') {
+          setStoredToken(null);
+          setToken(null);
+          setUser(null);
+          setIsGuest(true);
+          setIsLoading(false);
+          return;
+        }
+
+        setToken(storedToken);
+        setUser(currentUser);
+        setIsGuest(false);
+        sessionStorage.removeItem('guestMode');
       } catch {
         setStoredToken(null);
 
@@ -60,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    restoreSession();
+    void restoreSession();
 
     return () => {
       cancelled = true;
