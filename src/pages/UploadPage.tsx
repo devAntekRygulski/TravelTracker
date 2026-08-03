@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { api, type UploadSessionInfo } from '../lib/api';
 import './UploadPage.css';
 
+const LOGO_URL = '/travel-tracker-logo.png';
+
 type Status =
   | { kind: 'loading' }
   | { kind: 'invalid'; message: string }
@@ -94,7 +96,13 @@ export function UploadPage() {
   return (
     <main className="upload-page">
       <div className="upload-page__card">
-        <p className="upload-page__brand">Travel Tracker</p>
+        <div className="upload-page__logo-wrap">
+          <img
+            className="upload-page__logo"
+            src={LOGO_URL}
+            alt="Travel Tracker"
+          />
+        </div>
 
         {status.kind === 'loading' && (
           <p className="upload-page__text">Checking upload link…</p>
