@@ -1,0 +1,132 @@
+.upload-page {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: stretch;
+  justify-content: stretch;
+  padding: 0;
+  box-sizing: border-box;
+  background: #1e1e1e;
+}
+
+.upload-page__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.75rem;
+  width: 100%;
+  max-width: none;
+  flex: 1;
+  min-height: 100dvh;
+  padding: 3rem 1.25rem 1.75rem;
+  border: none;
+  border-radius: 0;
+  background: #1e1e1e;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.upload-page__logo-wrap {
+  width: min(92vw, 420px);
+  line-height: 0;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.upload-page__logo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.upload-page__heading {
+  margin: 0;
+  color: #e4e4e4;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: clamp(2.6rem, 11vw, 3.6rem);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  line-height: 1.08;
+  max-width: 11ch;
+}
+
+.upload-page__text {
+  margin: 0;
+  color: #9a9a9a;
+  font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+  line-height: 1.4;
+  max-width: 18ch;
+}
+
+.upload-page__success {
+  margin: 0;
+  color: #9fce8f;
+  font-size: clamp(1.3rem, 5.2vw, 1.6rem);
+  line-height: 1.4;
+  max-width: 18ch;
+}
+
+.upload-page__error {
+  margin: 0;
+  color: #e08585;
+  font-size: clamp(1.25rem, 5vw, 1.5rem);
+  max-width: 18ch;
+}
+
+.upload-page__file-input {
+  display: none;
+}
+
+.upload-page__button {
+  margin-top: 2.5rem;
+  width: 100%;
+  max-width: none;
+  padding: 1.55rem 1.5rem;
+  border: 3px solid var(--yellow-bright, #f5c518);
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--yellow-bright, #f5c518);
+  font-size: clamp(1.45rem, 6vw, 1.85rem);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.upload-page__button:hover:not(:disabled),
+.upload-page__button:focus-visible:not(:disabled) {
+  background: rgba(245, 197, 24, 0.12);
+}
+
+.upload-page__button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+@media (min-width: 640px) {
+  .upload-page {
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background: #121212;
+  }
+
+  .upload-page__card {
+    width: min(100%, 44rem);
+    min-height: min(96dvh, 52rem);
+    flex: 0 1 auto;
+    justify-content: flex-start;
+    padding: 3.5rem 3rem 2.5rem;
+    border: 1px solid #3a3a3a;
+    border-radius: 1.5rem;
+    background: #1e1e1e;
+  }
+
+  .upload-page__button {
+    max-width: 28rem;
+  }
+}

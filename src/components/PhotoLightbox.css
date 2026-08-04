@@ -1,0 +1,108 @@
+.photo-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+
+.photo-lightbox__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: rgba(10, 10, 10, 0.97);
+  cursor: pointer;
+}
+
+.photo-lightbox__image {
+  position: relative;
+  z-index: 1;
+  max-width: min(92vw, 1200px);
+  max-height: min(86vh, 900px);
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  border-radius: 0.35rem;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.55);
+  user-select: none;
+  pointer-events: none;
+}
+
+.photo-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  z-index: 2;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--yellow-bright, #f5c518);
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 2.75rem;
+  font-weight: 300;
+  line-height: 1;
+  cursor: pointer;
+  user-select: none;
+}
+
+.photo-lightbox__nav:hover,
+.photo-lightbox__nav:focus-visible {
+  color: #ffd84d;
+}
+
+.photo-lightbox__nav--prev {
+  left: clamp(0.5rem, 3vw, 2rem);
+}
+
+.photo-lightbox__nav--next {
+  right: clamp(0.5rem, 3vw, 2rem);
+}
+
+.photo-lightbox__close {
+  position: absolute;
+  top: 1.25rem;
+  right: clamp(0.5rem, 3vw, 2rem);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--yellow-bright, #f5c518);
+  font-size: 2.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.photo-lightbox__close:hover,
+.photo-lightbox__close:focus-visible {
+  color: #ffd84d;
+}
+
+.photo-lightbox__counter {
+  position: absolute;
+  bottom: 1.25rem;
+  left: 50%;
+  z-index: 2;
+  margin: 0;
+  transform: translateX(-50%);
+  color: #c8c8c8;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.95rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}

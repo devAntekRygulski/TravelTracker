@@ -1,0 +1,85 @@
+.map-country-action {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  min-width: 7.5rem;
+  max-width: min(13rem, calc(100% - 1.5rem));
+  padding: 0.55rem 0.6rem 0.6rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 0.7rem;
+  background-color: rgba(26, 26, 26, 0.88);
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+}
+
+.map-country-action__accent {
+  position: absolute;
+  top: 0.55rem;
+  left: 0;
+  width: 2px;
+  height: 0.95rem;
+  border-radius: 0 2px 2px 0;
+  background: var(--yellow-bright);
+}
+
+.map-country-action__name {
+  margin: 0;
+  padding-left: 0.4rem;
+  color: var(--text-primary);
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.map-country-action__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.map-country-action__mark,
+.map-country-action__photos {
+  width: 100%;
+  padding: 0.34rem 0.55rem;
+  border: none;
+  border-radius: 9999px;
+  font-size: 0.66rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition:
+    filter 0.15s ease,
+    transform 0.15s ease,
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.map-country-action__mark {
+  background-color: #3a3a3a;
+  color: var(--text-primary);
+  border: 1px solid #5a5a5a;
+}
+
+.map-country-action__photos {
+  background-color: var(--yellow-bright);
+  color: var(--text-dark);
+}
+
+.map-country-action__mark:hover,
+.map-country-action__photos:hover {
+  filter: brightness(1.06);
+}
+
+.map-country-action__mark:active,
+.map-country-action__photos:active {
+  transform: scale(0.98);
+}

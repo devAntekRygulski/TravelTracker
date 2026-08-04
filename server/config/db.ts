@@ -44,13 +44,14 @@ export async function connectDB(): Promise<typeof mongoose> {
     return cached.conn;
   }
 
-  resetCache();
-
+  // Reuse an in-flight connect attempt; starting a second mongoose.connect()
+  // on the same connection leaves requests racing a half-open connection.
   if (!cached.promise) {
     if (uri.startsWith('mongodb+srv://')) {
       configureDnsForMongoSrv();
     }
 
+    cached.conn = null;
     cached.promise = mongoose.connect(uri, {
       bufferCommands: false,
     });

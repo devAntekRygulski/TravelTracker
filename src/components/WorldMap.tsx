@@ -21,15 +21,36 @@ import {
   getRegionName,
 } from '../data/regionMapUtils';
 import { useRegionGeoData } from '../hooks/useRegionGeoData';
+import { useCountryHasPhotos } from '../hooks/useCountryHasPhotos';
+import {
+  PHOTO_FOCUS_DURATION_MS,
+  applyPhotoFocusFrameProgress,
+  computeFlatPhotoFocusTransform,
+  flatPhotoFocusTransformString,
+  photoFocusFillColor,
+  type PhotoFocusTransform,
+} from '../lib/photoFocus';
+import {
+  getCountryTerritories,
+  getTerritoryById,
+  type CountryTerritory,
+} from '../lib/countryTerritories';
+import { MapHoverTooltip } from './MapHoverTooltip';
+import { MapCountryActionBox } from './MapCountryActionBox';
+import { PhotoFocusFrame } from './PhotoFocusFrame';
+import { PhotoFocusTerritoryLinks } from './PhotoFocusTerritoryLinks';
 import './WorldMap.css';
 
 const GEO_URL = '/countries-110m.json';
 const MAP_PADDING = {
-  top: 10,
-  right: 8,
-  bottom: 8,
-  left: 8,
+  top: 28,
+  right: 24,
+  // Clear the bottom stats oval so southern land never sits under it at start.
+  bottom: 108,
+  left: 24,
 };
+/** Slight pullback vs original fit — more zoomed in than the prior pass. */
+const INITIAL_VIEW_SCALE = 0.96;
 const MAP_ROTATION: [number, number] = [-10, 0];
 
 const EXCLUDED_COUNTRY_IDS = new Set(['010', '260']);
@@ -45,8 +66,10 @@ const BORDER_WIDTH = 0.3;
 const BORDER_WIDTH_ACTIVE = 0.45;
 const REGION_BORDER_WIDTH = 0.22;
 const HOVER_SCALE = 1.08;
-const MIN_ZOOM = 1;
-const MAX_ZOOM = 8;
+const MIN_ZOOM = 0.5;
+const MAX_ZOOM = 16;
+/** Dismiss the country action box once the country drifts this far from it. */
+const SELECTION_DISMISS_DISTANCE_PX = 110;
 // Hide dense regional mesh at world view; fade it in as you zoom.
 const REGION_BORDERS_FADE_START = 2.25;
 const REGION_BORDERS_FADE_END = 4.5;
@@ -301,6 +324,8 @@ interface WorldMapProps {
   isRegionVisited: (regionId: string) => boolean;
   onToggleRegion: (regionId: string) => void;
   regionalViewLocked: boolean;
+  onPhotoFocusChange?: (active: boolean) => void;
+  onLightboxChange?: (open: boolean) => void;
 }
 
 function filterTopology(topology: Topology): Topology {
@@ -336,7 +361,7 @@ function createMapProjection(
     topology.objects.countries as Parameters<typeof feature>[1],
   ) as FeatureCollection<Geometry>;
 
-  return geoMercator()
+  const projection = geoMercator()
     .rotate(MAP_ROTATION)
     .fitExtent(
       [
@@ -345,6 +370,8 @@ function createMapProjection(
       ],
       collection,
     );
+
+  return projection.scale(projection.scale() * INITIAL_VIEW_SCALE);
 }
 
 function buildRegionPaths(
@@ -377,6 +404,8 @@ export function WorldMap({
   isRegionVisited,
   onToggleRegion,
   regionalViewLocked,
+  onPhotoFocusChange,
+  onLightboxChange,
 }: WorldMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomRafRef = useRef(0);
@@ -393,13 +422,48 @@ export function WorldMap({
   const [topology, setTopology] = useState<Topology | null>(null);
   const [hoveredCountryId, setHoveredCountryId] = useState<string | null>(null);
   const [hoveredRegionId, setHoveredRegionId] = useState<string | null>(null);
+  const [hoverLabel, setHoverLabel] = useState<string | null>(null);
+  const [hoverPos, setHoverPos] = useState({ x: 0, y: 0 });
+  const hoverHideTimeoutRef = useRef<number | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<{
+    id: string;
+    label: string;
+    x: number;
+    y: number;
+    /** Click point in the country group's SVG user space. */
+    anchorLocalX: number;
+    anchorLocalY: number;
+  } | null>(null);
+  const selectedHasPhotos = useCountryHasPhotos(selectedCountry?.id ?? null);
+  const selectedCountryRef = useRef(selectedCountry);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const handleLightboxChange = useCallback(
+    (open: boolean) => {
+      setLightboxOpen(open);
+      onLightboxChange?.(open);
+    },
+    [onLightboxChange],
+  );
   const [mapZoom, setMapZoom] = useState(1);
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [regionPaths, setRegionPaths] = useState<RegionPath[]>([]);
   const [innerBordersD, setInnerBordersD] = useState<string | null>(null);
   const [regionalPrepared, setRegionalPrepared] = useState(false);
+  const [photoFocus, setPhotoFocus] = useState<{
+    countryId: string;
+    territoryId: string;
+    territories: CountryTerritory[];
+    progress: number;
+    transform: PhotoFocusTransform;
+    /** Fill color when focus starts (yellow or bright grey). */
+    startFill: string;
+  } | null>(null);
+  const photoFocusRafRef = useRef(0);
+  const photoFocusRef = useRef(photoFocus);
+  const onPhotoFocusChangeRef = useRef(onPhotoFocusChange);
 
   const showRegionalView = regionalViewLocked;
+  const isPhotoFocusing = photoFocus !== null;
 
   const {
     admin1,
@@ -685,9 +749,74 @@ export function WorldMap({
   );
 
   const clearHover = () => {
+    if (hoverHideTimeoutRef.current !== null) {
+      window.clearTimeout(hoverHideTimeoutRef.current);
+      hoverHideTimeoutRef.current = null;
+    }
     setHoveredCountryId(null);
     setHoveredRegionId(null);
+    setHoverLabel(null);
   };
+
+  const cancelHoverHide = () => {
+    if (hoverHideTimeoutRef.current !== null) {
+      window.clearTimeout(hoverHideTimeoutRef.current);
+      hoverHideTimeoutRef.current = null;
+    }
+  };
+
+  const clearSelection = useCallback(() => {
+    setSelectedCountry(null);
+  }, []);
+
+  useEffect(() => {
+    selectedCountryRef.current = selectedCountry;
+  }, [selectedCountry]);
+
+  const dismissSelectionIfCountryFar = useCallback(() => {
+    const selected = selectedCountryRef.current;
+    const container = containerRef.current;
+    if (!selected || !container) return;
+
+    const el = container.querySelector(
+      `[data-country-id="${CSS.escape(selected.id)}"]`,
+    ) as SVGGraphicsElement | null;
+    const svg = el?.ownerSVGElement;
+    const ctm = el?.getScreenCTM?.();
+    if (!el || !svg || !ctm) {
+      clearSelection();
+      return;
+    }
+
+    const pt = svg.createSVGPoint();
+    pt.x = selected.anchorLocalX;
+    pt.y = selected.anchorLocalY;
+    const screen = pt.matrixTransform(ctm);
+    const containerRect = container.getBoundingClientRect();
+    const currentX = screen.x - containerRect.left;
+    const currentY = screen.y - containerRect.top;
+
+    if (
+      Math.hypot(currentX - selected.x, currentY - selected.y) >
+      SELECTION_DISMISS_DISTANCE_PX
+    ) {
+      clearSelection();
+    }
+  }, [clearSelection]);
+
+  const countryNameById = useMemo(() => {
+    const names = new Map<string, string>();
+    if (!topology) return names;
+    const countries = topology.objects.countries;
+    if (countries.type !== 'GeometryCollection') return names;
+    for (const geometry of countries.geometries) {
+      const id = String(geometry.id);
+      const name =
+        (geometry.properties as { name?: string } | null)?.name ?? id;
+      names.set(id, name);
+    }
+    return names;
+  }, [topology]);
 
   // Fills only — national outlines come from a single border mesh so shared
   // frontiers aren't painted twice (which looked thicker than country view).
@@ -805,21 +934,45 @@ export function WorldMap({
       : null;
 
   const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (selectedCountry) {
+      clearHover();
+      return;
+    }
+
+    const rect = containerRef.current?.getBoundingClientRect();
+    const localX = rect ? event.clientX - rect.left : 0;
+    const localY = rect ? event.clientY - rect.top : 0;
+
     if (showRegionalView) {
       if (!regionInteractionEnabled) {
-        setHoveredRegionId(null);
+        clearHover();
         return;
       }
 
       const regionElement = (event.target as Element).closest('[data-region-id]');
       const nextId = regionElement?.getAttribute('data-region-id') ?? null;
-      setHoveredRegionId((current) => (current === nextId ? current : nextId));
+      if (nextId) {
+        cancelHoverHide();
+        setHoverPos({ x: localX, y: localY });
+        setHoveredRegionId((current) => (current === nextId ? current : nextId));
+        const region = regionPathById.get(nextId);
+        setHoverLabel(region?.name ?? nextId);
+      } else {
+        clearHover();
+      }
       return;
     }
 
     const countryElement = (event.target as Element).closest('[data-country-id]');
     const nextId = countryElement?.getAttribute('data-country-id') ?? null;
-    setHoveredCountryId((current) => (current === nextId ? current : nextId));
+    if (nextId) {
+      cancelHoverHide();
+      setHoverPos({ x: localX, y: localY });
+      setHoveredCountryId((current) => (current === nextId ? current : nextId));
+      setHoverLabel(countryNameById.get(nextId) ?? nextId);
+    } else {
+      clearHover();
+    }
   };
 
   useEffect(() => {
@@ -827,24 +980,233 @@ export function WorldMap({
   }, [showRegionBorders, regionalPrepared, applyRegionBorderOpacity]);
 
   useEffect(() => {
+    photoFocusRef.current = photoFocus;
+  }, [photoFocus]);
+
+  useEffect(() => {
+    onPhotoFocusChangeRef.current = onPhotoFocusChange;
+  }, [onPhotoFocusChange]);
+
+  useEffect(() => {
     return () => {
       if (zoomRafRef.current) {
         cancelAnimationFrame(zoomRafRef.current);
       }
+      if (photoFocusRafRef.current) {
+        cancelAnimationFrame(photoFocusRafRef.current);
+      }
+      if (hoverHideTimeoutRef.current !== null) {
+        window.clearTimeout(hoverHideTimeoutRef.current);
+      }
+      onPhotoFocusChangeRef.current?.(false);
     };
   }, []);
+
+  const exitPhotoFocus = useCallback(() => {
+    if (!photoFocusRef.current) return;
+    if (photoFocusRafRef.current) {
+      cancelAnimationFrame(photoFocusRafRef.current);
+      photoFocusRafRef.current = 0;
+    }
+    containerRef.current?.style.removeProperty('--photo-fade');
+    setPhotoFocus(null);
+    onPhotoFocusChangeRef.current?.(false);
+  }, []);
+
+  useEffect(() => {
+    if (!photoFocus && !selectedCountry) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') return;
+      if (photoFocus) {
+        exitPhotoFocus();
+        return;
+      }
+      clearSelection();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [photoFocus, selectedCountry, exitPhotoFocus, clearSelection]);
+
+  const startPhotoFocus = useCallback(
+    (countryId: string) => {
+      if (!mapProjection || showRegionalView || photoFocusRef.current) return;
+
+      const geo = countryFeatures.find(
+        (feature) => String(feature.id) === countryId,
+      );
+      if (!geo) return;
+
+      const territories = getCountryTerritories(geo);
+      const mainland = territories[0];
+      const transform = computeFlatPhotoFocusTransform(
+        mainland.feature,
+        mapProjection,
+        dimensions.width,
+        dimensions.height,
+        mapCenter,
+        mapZoomRef.current,
+      );
+      if (!transform) return;
+
+      if (hoverHideTimeoutRef.current !== null) {
+        window.clearTimeout(hoverHideTimeoutRef.current);
+        hoverHideTimeoutRef.current = null;
+      }
+      setHoveredCountryId(null);
+      setHoveredRegionId(null);
+      setHoverLabel(null);
+      setSelectedCountry(null);
+
+      if (photoFocusRafRef.current) {
+        cancelAnimationFrame(photoFocusRafRef.current);
+      }
+
+      const startedAt = performance.now();
+      const startFill = isVisited(countryId) ? COLORS.yellow : COLORS.hover;
+      const base = {
+        countryId,
+        territoryId: mainland.id,
+        territories,
+        transform,
+        startFill,
+      };
+      photoFocusRef.current = { ...base, progress: 0 };
+      setPhotoFocus({ ...base, progress: 0 });
+      onPhotoFocusChangeRef.current?.(true);
+
+      const tick = (now: number) => {
+        const progress = Math.min(
+          1,
+          (now - startedAt) / PHOTO_FOCUS_DURATION_MS,
+        );
+        const next = { ...base, progress };
+        photoFocusRef.current = next;
+        // Animate via DOM — avoid React re-rendering the whole map each frame.
+        applyPhotoFocusFrameProgress(
+          containerRef.current,
+          progress,
+          transform,
+          startFill,
+        );
+        if (progress < 1) {
+          photoFocusRafRef.current = requestAnimationFrame(tick);
+        } else {
+          photoFocusRafRef.current = 0;
+          setPhotoFocus(next);
+        }
+      };
+
+      photoFocusRafRef.current = requestAnimationFrame(tick);
+    },
+    [
+      countryFeatures,
+      dimensions.height,
+      dimensions.width,
+      isVisited,
+      mapCenter,
+      mapProjection,
+      showRegionalView,
+    ],
+  );
+
+  const switchPhotoTerritory = useCallback(
+    (territoryId: string) => {
+      if (!mapProjection || !photoFocusRef.current) return;
+      const current = photoFocusRef.current;
+      const territory = getTerritoryById(current.territories, territoryId);
+      const transform = computeFlatPhotoFocusTransform(
+        territory.feature,
+        mapProjection,
+        dimensions.width,
+        dimensions.height,
+        mapCenter,
+        mapZoomRef.current,
+      );
+      if (!transform) return;
+
+      const next = {
+        ...current,
+        territoryId: territory.id,
+        transform,
+        progress: 1,
+      };
+      photoFocusRef.current = next;
+      setPhotoFocus(next);
+    },
+    [dimensions.height, dimensions.width, mapCenter, mapProjection],
+  );
 
   if (!topology || !mapProjection || dimensions.width === 0 || dimensions.height === 0) {
     return <div className="world-map" ref={containerRef} />;
   }
 
+  const activeFocusTerritory = photoFocus
+    ? getTerritoryById(photoFocus.territories, photoFocus.territoryId)
+    : null;
+  const activeFocusTerritoryPath =
+    activeFocusTerritory && pathGenerator
+      ? pathGenerator(activeFocusTerritory.feature) ?? ''
+      : '';
+
   return (
     <div
-      className="world-map"
+      className={`world-map${isPhotoFocusing ? ' world-map--photo-focus' : ''}`}
       ref={containerRef}
-      onPointerMove={handlePointerMove}
-      onPointerLeave={clearHover}
+      onPointerMove={isPhotoFocusing ? undefined : handlePointerMove}
+      onPointerLeave={isPhotoFocusing ? undefined : clearHover}
+      onClick={(event) => {
+        if (isPhotoFocusing || showRegionalView) return;
+        const target = event.target as Element;
+        if (target.closest('.map-country-action')) return;
+        if (!target.closest('[data-country-id]')) {
+          clearSelection();
+        }
+      }}
     >
+      {photoFocus && (
+        <>
+          <PhotoFocusFrame
+            countryId={photoFocus.countryId}
+            countryName={
+              countryNameById.get(photoFocus.countryId) ?? photoFocus.countryId
+            }
+            progress={photoFocus.progress}
+            onClose={exitPhotoFocus}
+            onLightboxChange={handleLightboxChange}
+          />
+          {!lightboxOpen && (
+            <PhotoFocusTerritoryLinks
+              territories={photoFocus.territories}
+              activeTerritoryId={photoFocus.territoryId}
+              progress={photoFocus.progress}
+              onSelect={switchPhotoTerritory}
+            />
+          )}
+        </>
+      )}
+      <MapHoverTooltip
+        label={hoverLabel}
+        x={hoverPos.x}
+        y={hoverPos.y}
+        visible={
+          !isPhotoFocusing &&
+          selectedCountry === null &&
+          hoverLabel !== null
+        }
+      />
+      {selectedCountry && !isPhotoFocusing && (
+        <MapCountryActionBox
+          label={selectedCountry.label}
+          x={selectedCountry.x}
+          y={selectedCountry.y}
+          isMarked={isVisited(selectedCountry.id)}
+          hasPhotos={selectedHasPhotos}
+          onMark={() => onToggle(selectedCountry.id)}
+          onAddPhotos={() => startPhotoFocus(selectedCountry.id)}
+        />
+      )}
       {showRegionalLoading && (
         <div className="world-map__loading-screen" role="status" aria-live="polite">
           <div className="world-map__spinner" aria-hidden="true" />
@@ -865,53 +1227,202 @@ export function WorldMap({
           <ZoomableGroup
             minZoom={MIN_ZOOM}
             maxZoom={MAX_ZOOM}
+            disablePanning={isPhotoFocusing}
+            disableZooming={isPhotoFocusing}
             onMove={(position) => {
+              if (photoFocusRef.current) return;
               pendingZoomRef.current = position.zoom;
               applyRegionBorderOpacity(position.zoom);
+              if (selectedCountryRef.current) {
+                dismissSelectionIfCountryFar();
+              }
               if (zoomRafRef.current) return;
               zoomRafRef.current = requestAnimationFrame(() => {
                 zoomRafRef.current = 0;
                 commitZoomIfNeeded(pendingZoomRef.current);
+                dismissSelectionIfCountryFar();
               });
             }}
-            onMoveEnd={handleMapMoveEnd}
-            filterZoomEvent={(event) => mapZoomFilter(event as unknown as Event)}
+            onMoveEnd={(position) => {
+              handleMapMoveEnd(position);
+              dismissSelectionIfCountryFar();
+            }}
+            filterZoomEvent={(event) =>
+              !photoFocusRef.current &&
+              mapZoomFilter(event as unknown as Event)
+            }
           >
             {!showRegionalView && (
               <Geographies geography={topology}>
                 {({ geographies }) =>
                   [...geographies]
                     .sort((a, b) => {
-                      const aHovered = String(a.id) === hoveredCountryId ? 1 : 0;
-                      const bHovered = String(b.id) === hoveredCountryId ? 1 : 0;
-                      return aHovered - bHovered;
+                      const focusId = photoFocus?.countryId;
+                      if (focusId) {
+                        const aFocus = String(a.id) === focusId ? 1 : 0;
+                        const bFocus = String(b.id) === focusId ? 1 : 0;
+                        if (aFocus !== bFocus) return aFocus - bFocus;
+                      }
+                      const selectedId = selectedCountry?.id;
+                      const aLifted =
+                        String(a.id) === hoveredCountryId ||
+                        String(a.id) === selectedId
+                          ? 1
+                          : 0;
+                      const bLifted =
+                        String(b.id) === hoveredCountryId ||
+                        String(b.id) === selectedId
+                          ? 1
+                          : 0;
+                      return aLifted - bLifted;
                     })
                     .map((geo) => {
                       const countryId = String(geo.id);
                       const visited = isVisited(countryId);
-                      const hovered = hoveredCountryId === countryId;
+                      const isFocusCountry = photoFocus?.countryId === countryId;
+                      const isSelected = selectedCountry?.id === countryId;
+                      const hovered =
+                        !isPhotoFocusing &&
+                        !selectedCountry &&
+                        hoveredCountryId === countryId;
+                      // Keep click highlight identical to hover (same lift + stroke).
+                      const isHighlighted = hovered || isSelected;
                       const countryName =
                         (geo.properties as { name?: string })?.name ?? countryId;
+                      // Fade other countries via CSS --photo-fade during focus animation.
+                      const opacity = 1;
 
                       const fillStyle = {
-                        ...countryFillStyle(visited, hovered),
-                        cursor: 'pointer',
+                        ...countryFillStyle(
+                          visited,
+                          isHighlighted,
+                        ),
+                        cursor: isPhotoFocusing ? 'default' : 'pointer',
+                        opacity,
                       };
-                      const borderStyle = countryBorderStyle(
-                        hovered ? BORDER_WIDTH_ACTIVE : BORDER_WIDTH,
-                      );
+                      const borderStyle = {
+                        ...countryBorderStyle(
+                          isHighlighted || isFocusCountry
+                            ? BORDER_WIDTH_ACTIVE
+                            : BORDER_WIDTH,
+                        ),
+                        opacity,
+                      };
+
+                      const transform = isFocusCountry && photoFocus
+                        ? flatPhotoFocusTransformString(
+                            photoFocus.transform,
+                            photoFocus.progress,
+                          )
+                        : getHoverTransform(geo, mapProjection, isHighlighted);
+
+                      if (isFocusCountry && photoFocus && pathGenerator) {
+                        const remoteStyle = {
+                          ...countryFillStyle(visited, false),
+                          cursor: 'default',
+                          opacity: 1,
+                        };
+                        const remoteBorder = {
+                          ...countryBorderStyle(BORDER_WIDTH),
+                          opacity: 1,
+                        };
+                        const focusFillStyle = {
+                          ...fillStyle,
+                          fill: photoFocusFillColor(
+                            photoFocus.startFill,
+                            photoFocus.progress,
+                          ),
+                        };
+
+                        return (
+                          <g
+                            key={geo.rsmKey}
+                            className="world-map__country"
+                            data-country-id={countryId}
+                            style={{ pointerEvents: 'none' }}
+                            aria-label={countryName}
+                          >
+                            {photoFocus.territories.map((territory) => {
+                              if (territory.id === photoFocus.territoryId) {
+                                return null;
+                              }
+                              const d = pathGenerator(territory.feature) ?? '';
+                              if (!d) return null;
+                              return (
+                                <g key={territory.id} data-photo-fade>
+                                  <path d={d} style={remoteStyle} />
+                                  <path d={d} style={remoteBorder} />
+                                </g>
+                              );
+                            })}
+                            {activeFocusTerritoryPath ? (
+                              <g data-photo-focus-transform transform={transform}>
+                                <path
+                                  data-photo-focus-fill
+                                  d={activeFocusTerritoryPath}
+                                  style={focusFillStyle}
+                                />
+                                <path
+                                  d={activeFocusTerritoryPath}
+                                  style={borderStyle}
+                                />
+                              </g>
+                            ) : null}
+                          </g>
+                        );
+                      }
 
                       return (
                         <g
                           key={geo.rsmKey}
                           className="world-map__country"
                           data-country-id={countryId}
-                          transform={getHoverTransform(geo, mapProjection, hovered)}
+                          data-photo-fade={photoFocus ? '' : undefined}
+                          transform={transform}
+                          style={{ pointerEvents: isPhotoFocusing ? 'none' : undefined }}
                         >
                           <Geography
                             geography={geo}
                             aria-label={countryName}
-                            onClick={() => onToggle(countryId)}
+                            onClick={(event) => {
+                              if (isPhotoFocusing) return;
+                              event.stopPropagation();
+                              if (selectedCountry) {
+                                clearSelection();
+                                return;
+                              }
+                              const rect =
+                                containerRef.current?.getBoundingClientRect();
+                              const x = rect
+                                ? event.clientX - rect.left
+                                : 0;
+                              const y = rect
+                                ? event.clientY - rect.top
+                                : 0;
+                              clearHover();
+                              const group = (event.currentTarget as Element)
+                                .closest('[data-country-id]') as SVGGraphicsElement | null;
+                              const svg = group?.ownerSVGElement;
+                              const ctm = group?.getScreenCTM?.();
+                              let anchorLocalX = 0;
+                              let anchorLocalY = 0;
+                              if (group && svg && ctm) {
+                                const pt = svg.createSVGPoint();
+                                pt.x = event.clientX;
+                                pt.y = event.clientY;
+                                const local = pt.matrixTransform(ctm.inverse());
+                                anchorLocalX = local.x;
+                                anchorLocalY = local.y;
+                              }
+                              setSelectedCountry({
+                                id: countryId,
+                                label: countryName,
+                                x,
+                                y,
+                                anchorLocalX,
+                                anchorLocalY,
+                              });
+                            }}
                             style={{
                               default: fillStyle,
                               hover: fillStyle,

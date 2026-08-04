@@ -1,0 +1,56 @@
+.photo-focus-territories {
+  position: absolute;
+  z-index: 8;
+  left: 2.5rem;
+  bottom: 2rem;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: min(32rem, calc(100% - 5rem));
+  pointer-events: none;
+}
+
+.photo-focus-territories__link {
+  margin: 0;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid #4a4a4a;
+  border-radius: 9999px;
+  background-color: rgba(26, 26, 26, 0.88);
+  backdrop-filter: blur(8px);
+  color: #c8c8c8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  transition:
+    color 0.15s ease,
+    filter 0.15s ease,
+    transform 0.15s ease;
+}
+
+.photo-focus-territories__link:hover,
+.photo-focus-territories__link:focus-visible {
+  color: var(--yellow-bright, #f5c518);
+  filter: brightness(1.06);
+}
+
+.photo-focus-territories__link:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 640px) {
+  .photo-focus-territories {
+    left: 0.75rem;
+    bottom: 1.5rem;
+    max-width: calc(100% - 1.5rem);
+  }
+
+  .photo-focus-territories__link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.72rem;
+  }
+}

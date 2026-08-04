@@ -1,0 +1,56 @@
+.photo-upload-qr-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 11rem;
+}
+
+.photo-upload-qr-panel__label {
+  margin: 0;
+  color: #e4e4e4;
+  font-family: 'Outfit', system-ui, sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.photo-upload-qr-panel__hint,
+.photo-upload-qr-panel__timer {
+  margin: 0;
+  color: #9a9a9a;
+  font-size: 0.72rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.photo-upload-qr-panel__error {
+  margin: 0;
+  max-width: 11rem;
+  color: #e08585;
+  font-size: 0.72rem;
+  text-align: center;
+}
+
+.photo-upload-qr-panel__code {
+  position: relative;
+  padding: 0.4rem;
+  border-radius: 0.65rem;
+  background: #ffffff;
+  line-height: 0;
+}
+
+.photo-upload-qr-panel__expired {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.65rem;
+  background: rgba(20, 20, 20, 0.82);
+  color: #e4e4e4;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
