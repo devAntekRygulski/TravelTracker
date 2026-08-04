@@ -97,10 +97,11 @@ function readTunnelUrlFile(): string | null {
  *
  * Priority:
  * 1. CLIENT_PUBLIC_URL / CLIENT_LAN_URL (deployed or forced public URL)
- * 2. Active Cloudflare tunnel (.tunnel-url from `npm run tunnel`)
- * 3. Non-loopback CLIENT_URL
- * 4. Auto-detected LAN IP (same Wi‑Fi only)
- * 5. localhost (phones cannot use this)
+ * 2. VERCEL_URL (set automatically on Vercel deployments)
+ * 3. Active Cloudflare tunnel (.tunnel-url from `npm run tunnel`)
+ * 4. Non-loopback CLIENT_URL
+ * 5. Auto-detected LAN IP (same Wi‑Fi only)
+ * 6. localhost (phones cannot use this)
  */
 export function getClientBaseUrl(): string {
   const configured = normalizeClientUrl(
@@ -114,6 +115,14 @@ export function getClientBaseUrl(): string {
 
   if (explicitPublic) {
     return normalizeClientUrl(explicitPublic);
+  }
+
+  // Vercel sets VERCEL_URL (no scheme) on every deployment.
+  const vercelHost = (process.env.VERCEL_URL ?? '').trim();
+  if (vercelHost) {
+    return normalizeClientUrl(
+      vercelHost.startsWith('http') ? vercelHost : `https://${vercelHost}`,
+    );
   }
 
   const tunnelUrl = readTunnelUrlFile();
