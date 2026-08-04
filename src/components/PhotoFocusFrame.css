@@ -273,6 +273,22 @@
   color: #ffffff;
 }
 
+.photo-focus-frame__thumb-button {
+  display: block;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.photo-focus-frame__thumb-button:focus-visible {
+  outline: 2px solid var(--yellow-bright, #f5c518);
+  outline-offset: -2px;
+}
+
 .photo-focus-frame__thumb {
   display: block;
   width: 100%;

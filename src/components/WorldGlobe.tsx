@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   geoCentroid,
   geoContains,
@@ -24,6 +24,7 @@ import {
   getTerritoryById,
   type CountryTerritory,
 } from '../lib/countryTerritories';
+import { useCountryHasPhotos } from '../hooks/useCountryHasPhotos';
 import { MapHoverTooltip } from './MapHoverTooltip';
 import { MapCountryActionBox } from './MapCountryActionBox';
 import { PhotoFocusFrame } from './PhotoFocusFrame';
@@ -61,6 +62,7 @@ interface WorldGlobeProps {
   isVisited: (countryId: string) => boolean;
   onToggle: (countryId: string) => void;
   onPhotoFocusChange?: (active: boolean) => void;
+  onLightboxChange?: (open: boolean) => void;
 }
 
 type CountryFeature = Feature<Geometry> & { id?: string | number };
@@ -268,6 +270,7 @@ export function WorldGlobe({
   isVisited,
   onToggle,
   onPhotoFocusChange,
+  onLightboxChange,
 }: WorldGlobeProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -327,7 +330,16 @@ export function WorldGlobe({
     lon: number;
     lat: number;
   } | null>(null);
+  const selectedHasPhotos = useCountryHasPhotos(selectedCountry?.id ?? null);
   const selectedCountryRef = useRef(selectedCountry);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const handleLightboxChange = useCallback(
+    (open: boolean) => {
+      setLightboxOpen(open);
+      onLightboxChange?.(open);
+    },
+    [onLightboxChange],
+  );
   const setSelectedCountryRef = useRef(setSelectedCountry);
 
   useEffect(() => {
@@ -1155,13 +1167,16 @@ export function WorldGlobe({
             }
             progress={photoFocus.progress}
             onClose={exitPhotoFocus}
+            onLightboxChange={handleLightboxChange}
           />
-          <PhotoFocusTerritoryLinks
-            territories={photoFocus.territories}
-            activeTerritoryId={photoFocus.territoryId}
-            progress={photoFocus.progress}
-            onSelect={switchPhotoTerritory}
-          />
+          {!lightboxOpen && (
+            <PhotoFocusTerritoryLinks
+              territories={photoFocus.territories}
+              activeTerritoryId={photoFocus.territoryId}
+              progress={photoFocus.progress}
+              onSelect={switchPhotoTerritory}
+            />
+          )}
         </>
       )}
       <MapHoverTooltip
@@ -1181,6 +1196,7 @@ export function WorldGlobe({
           x={selectedCountry.x}
           y={selectedCountry.y}
           isMarked={isVisited(selectedCountry.id)}
+          hasPhotos={selectedHasPhotos}
           onMark={() => {
             onToggle(selectedCountry.id);
             schedulePaintRef.current();

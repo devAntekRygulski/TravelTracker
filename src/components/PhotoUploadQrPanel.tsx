@@ -6,7 +6,6 @@ import {
   rememberGuestUploadSession,
   restoreGuestUploadSession,
 } from '../lib/guestUploadSession';
-import { UploadQrLinkHelp } from './UploadQrLinkHelp';
 import './PhotoUploadQrPanel.css';
 
 interface PhotoUploadQrPanelProps {
@@ -179,7 +178,6 @@ export function PhotoUploadQrPanel({
               ? 'Code expired'
               : `Expires in ${formatRemaining(remainingMs)}`}
           </p>
-          <UploadQrLinkHelp uploadUrl={session.uploadUrl} />
         </>
       ) : (
         <p className="photo-upload-qr-panel__hint">Generating code…</p>

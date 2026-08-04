@@ -8,6 +8,7 @@ interface MapCountryActionBoxProps {
   x: number;
   y: number;
   isMarked: boolean;
+  hasPhotos: boolean;
   onAddPhotos: () => void;
   onMark: () => void;
 }
@@ -18,6 +19,7 @@ export function MapCountryActionBox({
   x,
   y,
   isMarked,
+  hasPhotos,
   onAddPhotos,
   onMark,
 }: MapCountryActionBoxProps) {
@@ -47,7 +49,7 @@ export function MapCountryActionBox({
           className="map-country-action__photos"
           onClick={onAddPhotos}
         >
-          Add photos
+          {hasPhotos ? 'View photos' : 'Add photos'}
         </button>
       </div>
     </div>

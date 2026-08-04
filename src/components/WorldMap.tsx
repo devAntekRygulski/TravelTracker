@@ -21,6 +21,7 @@ import {
   getRegionName,
 } from '../data/regionMapUtils';
 import { useRegionGeoData } from '../hooks/useRegionGeoData';
+import { useCountryHasPhotos } from '../hooks/useCountryHasPhotos';
 import {
   PHOTO_FOCUS_DURATION_MS,
   applyPhotoFocusFrameProgress,
@@ -324,6 +325,7 @@ interface WorldMapProps {
   onToggleRegion: (regionId: string) => void;
   regionalViewLocked: boolean;
   onPhotoFocusChange?: (active: boolean) => void;
+  onLightboxChange?: (open: boolean) => void;
 }
 
 function filterTopology(topology: Topology): Topology {
@@ -403,6 +405,7 @@ export function WorldMap({
   onToggleRegion,
   regionalViewLocked,
   onPhotoFocusChange,
+  onLightboxChange,
 }: WorldMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const zoomRafRef = useRef(0);
@@ -431,7 +434,16 @@ export function WorldMap({
     anchorLocalX: number;
     anchorLocalY: number;
   } | null>(null);
+  const selectedHasPhotos = useCountryHasPhotos(selectedCountry?.id ?? null);
   const selectedCountryRef = useRef(selectedCountry);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const handleLightboxChange = useCallback(
+    (open: boolean) => {
+      setLightboxOpen(open);
+      onLightboxChange?.(open);
+    },
+    [onLightboxChange],
+  );
   const [mapZoom, setMapZoom] = useState(1);
   const [mapCenter, setMapCenter] = useState<[number, number]>([0, 20]);
   const [regionPaths, setRegionPaths] = useState<RegionPath[]>([]);
@@ -1162,13 +1174,16 @@ export function WorldMap({
             }
             progress={photoFocus.progress}
             onClose={exitPhotoFocus}
+            onLightboxChange={handleLightboxChange}
           />
-          <PhotoFocusTerritoryLinks
-            territories={photoFocus.territories}
-            activeTerritoryId={photoFocus.territoryId}
-            progress={photoFocus.progress}
-            onSelect={switchPhotoTerritory}
-          />
+          {!lightboxOpen && (
+            <PhotoFocusTerritoryLinks
+              territories={photoFocus.territories}
+              activeTerritoryId={photoFocus.territoryId}
+              progress={photoFocus.progress}
+              onSelect={switchPhotoTerritory}
+            />
+          )}
         </>
       )}
       <MapHoverTooltip
@@ -1187,6 +1202,7 @@ export function WorldMap({
           x={selectedCountry.x}
           y={selectedCountry.y}
           isMarked={isVisited(selectedCountry.id)}
+          hasPhotos={selectedHasPhotos}
           onMark={() => onToggle(selectedCountry.id)}
           onAddPhotos={() => startPhotoFocus(selectedCountry.id)}
         />

@@ -3,8 +3,8 @@ import { getCountryNameImageSrc } from '../data/countryNameImages';
 import { SAMPLE_PHOTOS } from '../data/samplePhotos';
 import { useCountryPhotos } from '../hooks/useCountryPhotos';
 import { useGuestPendingClaim } from '../hooks/useGuestPendingClaim';
-import { claimGuestPendingPhotos } from '../lib/guestUploadSession';
 import { easeInOutCubic } from '../lib/photoFocus';
+import { PhotoLightbox } from './PhotoLightbox';
 import { PhotoUploadQrPanel } from './PhotoUploadQrPanel';
 import './PhotoFocusFrame.css';
 
@@ -46,6 +46,7 @@ interface PhotoFocusFrameProps {
   countryName: string;
   progress: number;
   onClose: () => void;
+  onLightboxChange?: (open: boolean) => void;
 }
 
 /** Right-side photos panel while a country is focused. */
@@ -54,6 +55,7 @@ export function PhotoFocusFrame({
   countryName,
   progress,
   onClose,
+  onLightboxChange,
 }: PhotoFocusFrameProps) {
   const opacity = easeInOutCubic(progress);
   const buttonRef = useRef<HTMLButtonElement>(null);
@@ -63,19 +65,28 @@ export function PhotoFocusFrame({
   const { photos, loading, error, upload, remove, refresh } =
     useCountryPhotos(countryId);
   const [uploading, setUploading] = useState(false);
-  const [syncingPhone, setSyncingPhone] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   /** True when the user opens "Add photos" over an existing gallery. */
   const [addingMore, setAddingMore] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [trackedCountryId, setTrackedCountryId] = useState(countryId);
 
   if (trackedCountryId !== countryId) {
     setTrackedCountryId(countryId);
     setAddingMore(false);
+    setLightboxIndex(null);
   }
 
   const hasPhotos = photos.length > 0;
   const showUploadOverlay = !loading && (!hasPhotos || addingMore);
+  const lightboxOpen = lightboxIndex !== null;
+  const onLightboxChangeRef = useRef(onLightboxChange);
+  onLightboxChangeRef.current = onLightboxChange;
+
+  useEffect(() => {
+    onLightboxChangeRef.current?.(lightboxOpen);
+    return () => onLightboxChangeRef.current?.(false);
+  }, [lightboxOpen]);
 
   useEffect(() => {
     const button = buttonRef.current;
@@ -150,32 +161,6 @@ export function PhotoFocusFrame({
 
   useGuestPendingClaim(countryId, handlePhonePhotosChanged);
 
-  const handleSyncPhonePhotos = async () => {
-    setSyncingPhone(true);
-    setActionError(null);
-
-    try {
-      const claimed = await claimGuestPendingPhotos(countryId);
-      await refresh();
-
-      if (claimed === 0) {
-        setActionError(
-          'No new phone photos found yet. Keep this panel open after uploading.',
-        );
-      } else {
-        setAddingMore(false);
-      }
-    } catch (syncError) {
-      setActionError(
-        syncError instanceof Error
-          ? syncError.message
-          : 'Failed to sync phone photos',
-      );
-    } finally {
-      setSyncingPhone(false);
-    }
-  };
-
   const handleDelete = async (photoId: string) => {
     setActionError(null);
 
@@ -203,6 +188,14 @@ export function PhotoFocusFrame({
         alt: photo.alt,
         deletable: false as const,
       }));
+
+  const lightboxPhotos = galleryPhotos
+    .filter((photo) => photo.deletable)
+    .map((photo) => ({
+      id: photo.id,
+      src: photo.src,
+      alt: photo.alt,
+    }));
 
   return (
     <div
@@ -259,21 +252,41 @@ export function PhotoFocusFrame({
               <p className="photo-focus-frame__empty">Loading photos…</p>
             ) : (
               <ul className="photo-focus-frame__grid">
-                {galleryPhotos.map((photo) => (
+                {galleryPhotos.map((photo, index) => (
                   <li key={photo.id} className="photo-focus-frame__cell">
-                    <img
-                      className="photo-focus-frame__thumb"
-                      src={photo.src}
-                      alt={photo.alt}
-                      loading="lazy"
-                      draggable={false}
-                    />
+                    {photo.deletable ? (
+                      <button
+                        type="button"
+                        className="photo-focus-frame__thumb-button"
+                        onClick={() => setLightboxIndex(index)}
+                        aria-label={`View photo ${index + 1}`}
+                      >
+                        <img
+                          className="photo-focus-frame__thumb"
+                          src={photo.src}
+                          alt={photo.alt}
+                          loading="lazy"
+                          draggable={false}
+                        />
+                      </button>
+                    ) : (
+                      <img
+                        className="photo-focus-frame__thumb"
+                        src={photo.src}
+                        alt={photo.alt}
+                        loading="lazy"
+                        draggable={false}
+                      />
+                    )}
                     {photo.deletable && !showUploadOverlay && (
                       <button
                         type="button"
                         className="photo-focus-frame__delete"
                         aria-label="Delete photo"
-                        onClick={() => void handleDelete(photo.id)}
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void handleDelete(photo.id);
+                        }}
                       >
                         ×
                       </button>
@@ -324,15 +337,6 @@ export function PhotoFocusFrame({
                   countryName={countryName}
                   onPhotosChanged={handlePhonePhotosChanged}
                 />
-
-                <button
-                  type="button"
-                  className="photo-focus-frame__action"
-                  disabled={syncingPhone}
-                  onClick={() => void handleSyncPhonePhotos()}
-                >
-                  {syncingPhone ? 'Syncing…' : 'Sync phone photos'}
-                </button>
               </div>
 
               {(actionError ?? error) && (
@@ -364,6 +368,15 @@ export function PhotoFocusFrame({
           )}
         </div>
       </aside>
+
+      {lightboxIndex !== null && lightboxPhotos.length > 0 && (
+        <PhotoLightbox
+          photos={lightboxPhotos}
+          index={Math.min(lightboxIndex, lightboxPhotos.length - 1)}
+          onClose={() => setLightboxIndex(null)}
+          onIndexChange={setLightboxIndex}
+        />
+      )}
     </div>
   );
 }

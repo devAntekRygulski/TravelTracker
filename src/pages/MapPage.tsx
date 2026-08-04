@@ -31,6 +31,7 @@ export function MapPage() {
     useState<MapProjectionMode>('flat');
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoFocusActive, setPhotoFocusActive] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const switchAccountRef = useRef(false);
 
   useEffect(() => {
@@ -108,46 +109,51 @@ export function MapPage() {
   }
 
   return (
-    <div className="map-page">
+    <div className={`map-page${lightboxOpen ? ' map-page--lightbox' : ''}`}>
       <main className="map-page__main">
-        <header className="map-page__top">
-          <MapBurgerButton
-            open={menuOpen}
-            onClick={() => setMenuOpen((open) => !open)}
-          />
-          <div className="map-page__logo-wrap">
-            <img
-              className="map-page__logo"
-              src={LOGO_URL}
-              alt="Travel Tracker"
+        {!lightboxOpen && (
+          <header className="map-page__top">
+            <MapBurgerButton
+              open={menuOpen}
+              onClick={() => setMenuOpen((open) => !open)}
             />
-          </div>
-          <Link to="/" className="map-page__back" onClick={handleLogOut}>
-            Log out
-          </Link>
-        </header>
+            <div className="map-page__logo-wrap">
+              <img
+                className="map-page__logo"
+                src={LOGO_URL}
+                alt="Travel Tracker"
+              />
+            </div>
+            <Link to="/" className="map-page__back" onClick={handleLogOut}>
+              Log out
+            </Link>
+          </header>
+        )}
         <MapSidePanel
-          open={menuOpen}
+          open={menuOpen && !lightboxOpen}
           onClose={() => setMenuOpen(false)}
           accountLabel="My account"
           onMyAccount={handleMyAccount}
           onExport={handleExport}
           onSwitchAccount={handleSwitchAccount}
         />
-        <MapStats
-          countriesVisited={count}
-          continentsVisited={continentCount}
-          regionalViewLocked={regionalViewLocked}
-          onRegionalViewChange={setRegionalViewLocked}
-          projectionMode={projectionMode}
-          onProjectionModeChange={handleProjectionModeChange}
-          hideToggles={photoFocusActive}
-        />
+        {!lightboxOpen && (
+          <MapStats
+            countriesVisited={count}
+            continentsVisited={continentCount}
+            regionalViewLocked={regionalViewLocked}
+            onRegionalViewChange={setRegionalViewLocked}
+            projectionMode={projectionMode}
+            onProjectionModeChange={handleProjectionModeChange}
+            hideToggles={photoFocusActive}
+          />
+        )}
         {projectionMode === 'globe' ? (
           <WorldGlobe
             isVisited={isVisited}
             onToggle={toggle}
             onPhotoFocusChange={setPhotoFocusActive}
+            onLightboxChange={setLightboxOpen}
           />
         ) : (
           <WorldMap
@@ -157,6 +163,7 @@ export function MapPage() {
             onToggleRegion={toggleRegion}
             regionalViewLocked={regionalViewLocked}
             onPhotoFocusChange={setPhotoFocusActive}
+            onLightboxChange={setLightboxOpen}
           />
         )}
       </main>
