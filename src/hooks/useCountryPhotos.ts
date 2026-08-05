@@ -5,6 +5,7 @@ import {
   deleteGuestPhoto,
   listGuestPhotos,
 } from '../lib/guestPhotos';
+import { setCountryHasPhotosCache } from './useCountryHasPhotos';
 import { useAuth } from './useAuth';
 
 export interface CountryPhotoItem {
@@ -54,6 +55,11 @@ export function useCountryPhotos(countryId: string) {
       if (!useGuestStorage && token) {
         const { photos } = await api.getCountryPhotos(token, countryId);
 
+        setCountryHasPhotosCache(
+          countryId,
+          photos.length > 0,
+          useGuestStorage ? 'guest' : token,
+        );
         setState({
           key: galleryKey,
           photos: photos.map((photo) => ({ id: photo.id, url: photo.url })),
@@ -73,6 +79,7 @@ export function useCountryPhotos(countryId: string) {
         return { id: record.id, url };
       });
 
+      setCountryHasPhotosCache(countryId, photos.length > 0, 'guest');
       setState({ key: galleryKey, photos, loading: false, error: null });
     } catch (error) {
       setState({

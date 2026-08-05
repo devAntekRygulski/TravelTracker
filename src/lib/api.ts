@@ -199,6 +199,10 @@ export const api = {
     }, token);
   },
 
+  getCountriesWithPhotos(token: string) {
+    return request<{ countryIds: string[] }>('/photos/countries', {}, token);
+  },
+
   getCountryPhotos(token: string, countryId: string) {
     return request<PhotosResponse>(`/photos/${countryId}`, {}, token);
   },

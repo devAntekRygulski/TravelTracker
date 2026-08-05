@@ -426,6 +426,25 @@ router.post('/guest-session', async (req: Request, res: Response) => {
 
 // --- Authenticated photo endpoints ---
 
+router.get('/countries', requireAuth, async (req: AuthRequest, res: Response) => {
+  try {
+    await connectDB();
+
+    const countryIds = await Photo.distinct('countryId', {
+      userId: req.user!._id,
+    });
+
+    res.json({
+      countryIds: countryIds.filter(
+        (id): id is string => typeof id === 'string' && id.length > 0,
+      ),
+    });
+  } catch (error) {
+    console.error('List countries with photos error:', error);
+    res.status(500).json({ message: 'Failed to fetch countries with photos' });
+  }
+});
+
 router.get(
   '/:countryId',
   requireAuth,

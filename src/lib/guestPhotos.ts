@@ -41,6 +41,29 @@ function awaitRequest<T>(request: IDBRequest<T>): Promise<T> {
   });
 }
 
+/** Country ids that currently have at least one guest photo in IndexedDB. */
+export async function listGuestCountriesWithPhotos(): Promise<string[]> {
+  const db = await openDb();
+
+  try {
+    const store = db.transaction(STORE, 'readonly').objectStore(STORE);
+    const records = await awaitRequest(
+      store.getAll() as IDBRequest<GuestPhotoRecord[]>,
+    );
+    const countryIds = new Set<string>();
+
+    for (const record of records) {
+      if (record.countryId) {
+        countryIds.add(record.countryId);
+      }
+    }
+
+    return [...countryIds];
+  } finally {
+    db.close();
+  }
+}
+
 export async function listGuestPhotos(
   countryId: string,
 ): Promise<GuestPhotoRecord[]> {

@@ -9,6 +9,8 @@ interface MapCountryActionBoxProps {
   y: number;
   isMarked: boolean;
   hasPhotos: boolean;
+  /** False while photo presence is still loading — avoid flashing the wrong label. */
+  photosReady?: boolean;
   onAddPhotos: () => void;
   onMark: () => void;
 }
@@ -20,9 +22,16 @@ export function MapCountryActionBox({
   y,
   isMarked,
   hasPhotos,
+  photosReady = true,
   onAddPhotos,
   onMark,
 }: MapCountryActionBoxProps) {
+  const photosLabel = !photosReady
+    ? 'Photos'
+    : hasPhotos
+      ? 'View photos'
+      : 'Add photos';
+
   return (
     <div
       className="map-country-action"
@@ -49,7 +58,7 @@ export function MapCountryActionBox({
           className="map-country-action__photos"
           onClick={onAddPhotos}
         >
-          {hasPhotos ? 'View photos' : 'Add photos'}
+          {photosLabel}
         </button>
       </div>
     </div>

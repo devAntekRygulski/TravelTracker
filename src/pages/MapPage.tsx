@@ -7,6 +7,7 @@ import { WorldGlobe } from '../components/WorldGlobe';
 import { MapStats } from '../components/MapStats';
 import type { MapProjectionMode } from '../components/MapProjectionToggle';
 import { useAuth } from '../hooks/useAuth';
+import { prefetchCountryPhotoPresence } from '../hooks/useCountryHasPhotos';
 import { prefetchRegionMap } from '../hooks/useRegionGeoData';
 import { useVisitedCountries } from '../hooks/useVisitedCountries';
 import { downloadFlatMapPng } from '../lib/exportFlatMapPng';
@@ -16,7 +17,7 @@ const LOGO_URL = '/travel-tracker-logo.png';
 
 export function MapPage() {
   const navigate = useNavigate();
-  const { user, isGuest, isLoading, logout } = useAuth();
+  const { user, token, isGuest, isLoading, logout } = useAuth();
   const {
     toggle,
     isVisited,
@@ -37,6 +38,13 @@ export function MapPage() {
   useEffect(() => {
     prefetchRegionMap();
   }, []);
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!user && !isGuest) return;
+
+    void prefetchCountryPhotoPresence(token, isGuest);
+  }, [isLoading, user, isGuest, token]);
 
   useEffect(() => {
     if (!isLoading && !user && !isGuest) {

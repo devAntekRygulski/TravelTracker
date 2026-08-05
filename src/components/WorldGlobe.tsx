@@ -330,7 +330,8 @@ export function WorldGlobe({
     lon: number;
     lat: number;
   } | null>(null);
-  const selectedHasPhotos = useCountryHasPhotos(selectedCountry?.id ?? null);
+  const { hasPhotos: selectedHasPhotos, ready: selectedPhotosReady } =
+    useCountryHasPhotos(selectedCountry?.id ?? null);
   const selectedCountryRef = useRef(selectedCountry);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const handleLightboxChange = useCallback(
@@ -1197,6 +1198,7 @@ export function WorldGlobe({
           y={selectedCountry.y}
           isMarked={isVisited(selectedCountry.id)}
           hasPhotos={selectedHasPhotos}
+          photosReady={selectedPhotosReady}
           onMark={() => {
             onToggle(selectedCountry.id);
             schedulePaintRef.current();
