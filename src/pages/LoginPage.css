@@ -80,11 +80,14 @@
 /* Phone only — enlarge landing logo, copy, and actions */
 @media (max-width: 768px) {
   .login-page {
+    align-items: flex-start;
     min-height: 100dvh;
-    padding: 1.25rem 1rem 3rem;
+    padding: 0 1rem 3rem;
   }
 
   .login-page__content {
+    /* Place logo slightly above vertical center */
+    margin-top: calc(45dvh - 3.4rem);
     max-width: min(100%, 18rem);
     gap: 1.4rem;
   }
