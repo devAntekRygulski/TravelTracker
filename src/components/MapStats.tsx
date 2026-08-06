@@ -75,7 +75,9 @@ export function MapStats({
   return (
     <aside className="map-stats" aria-label="Travel statistics">
       <div
-        className={`map-stats__toggles${hideToggles ? ' map-stats__toggles--hidden' : ''}`}
+        className={`map-stats__toggles map-stats__toggles--desktop${
+          hideToggles ? ' map-stats__toggles--hidden' : ''
+        }`}
         aria-hidden={hideToggles}
       >
         <MapViewToggle

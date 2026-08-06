@@ -35,9 +35,14 @@ function paintBurger(
 interface MapBurgerButtonProps {
   open?: boolean;
   onClick?: () => void;
+  panelId?: string;
 }
 
-export function MapBurgerButton({ open = false, onClick }: MapBurgerButtonProps) {
+export function MapBurgerButton({
+  open = false,
+  onClick,
+  panelId = 'map-side-panel',
+}: MapBurgerButtonProps) {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -78,7 +83,7 @@ export function MapBurgerButton({ open = false, onClick }: MapBurgerButtonProps)
       className="map-page__burger"
       aria-label={open ? 'Close menu' : 'Open menu'}
       aria-expanded={open}
-      aria-controls="map-side-panel"
+      aria-controls={panelId}
       onClick={onClick}
     >
       <canvas ref={canvasRef} className="map-page__burger-canvas" aria-hidden="true" />

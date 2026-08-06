@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { MapBurgerButton } from '../components/MapBurgerButton';
+import { useNavigate } from 'react-router-dom';
 import { MapSidePanel } from '../components/MapSidePanel';
+import { MapSettingsMenu } from '../components/MapSettingsMenu';
+import { MapUserMenu } from '../components/MapUserMenu';
 import { WorldMap } from '../components/WorldMap';
 import { WorldGlobe } from '../components/WorldGlobe';
 import { MapStats } from '../components/MapStats';
@@ -59,15 +60,8 @@ export function MapPage() {
   }, [isLoading, user, isGuest, navigate]);
 
   useEffect(() => {
-    if (!menuOpen) return;
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') setMenuOpen(false);
-    };
-
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [menuOpen]);
+    if (lightboxOpen) setMenuOpen(false);
+  }, [lightboxOpen]);
 
   const handleLogOut = () => {
     logout();
@@ -121,10 +115,21 @@ export function MapPage() {
       <main className="map-page__main">
         {!lightboxOpen && (
           <header className="map-page__top">
-            <MapBurgerButton
-              open={menuOpen}
-              onClick={() => setMenuOpen((open) => !open)}
-            />
+            <div className="map-page__top-start">
+              <MapSidePanel
+                open={menuOpen}
+                onClose={() => setMenuOpen(false)}
+                onToggle={() => setMenuOpen((open) => !open)}
+                onExport={handleExport}
+              />
+              <MapSettingsMenu
+                regionalViewLocked={regionalViewLocked}
+                onRegionalViewChange={setRegionalViewLocked}
+                projectionMode={projectionMode}
+                onProjectionModeChange={handleProjectionModeChange}
+                hidden={photoFocusActive}
+              />
+            </div>
             <div className="map-page__logo-wrap">
               <img
                 className="map-page__logo"
@@ -132,19 +137,14 @@ export function MapPage() {
                 alt="Travel Tracker"
               />
             </div>
-            <Link to="/" className="map-page__back" onClick={handleLogOut}>
-              Log out
-            </Link>
+            <MapUserMenu
+              accountLabel="My account"
+              onMyAccount={handleMyAccount}
+              onSwitchAccount={handleSwitchAccount}
+              onLogOut={handleLogOut}
+            />
           </header>
         )}
-        <MapSidePanel
-          open={menuOpen && !lightboxOpen}
-          onClose={() => setMenuOpen(false)}
-          accountLabel="My account"
-          onMyAccount={handleMyAccount}
-          onExport={handleExport}
-          onSwitchAccount={handleSwitchAccount}
-        />
         {!lightboxOpen && (
           <MapStats
             countriesVisited={count}

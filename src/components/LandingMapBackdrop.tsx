@@ -17,7 +17,16 @@ const COLORS = {
 
 const COUNTRY_GAP = 3.5;
 const BORDER_WIDTH = 0.7;
-const ZOOM = 2.35;
+const DESKTOP_ZOOM = 2.35;
+/** Taller phone viewports need more zoom so the map fills top-to-bottom. */
+const MOBILE_ZOOM = 5.1;
+/**
+ * Phone-only latitude rotate bias. Negative phi shifts the frame north
+ * so the camera sits higher over the northern hemisphere.
+ */
+const MOBILE_LAT_BIAS = -28;
+const MOBILE_LAT_SWAY = 4;
+const MOBILE_QUERY = '(max-width: 768px)';
 const PAN_DEGREES_PER_SECOND = 4.2;
 const LAT_SWAY = 8;
 const LAT_SWAY_PERIOD_MS = 28000;
@@ -39,6 +48,14 @@ function pickStartSpot(): { lon: number; latPhaseMs: number } {
     // Randomize where we are in the north/south sway cycle.
     latPhaseMs: Math.random() * LAT_SWAY_PERIOD_MS,
   };
+}
+
+function isMobileBackdrop(): boolean {
+  return window.matchMedia(MOBILE_QUERY).matches;
+}
+
+function getBackdropZoom(): number {
+  return isMobileBackdrop() ? MOBILE_ZOOM : DESKTOP_ZOOM;
 }
 
 type CountryFeature = {
@@ -110,13 +127,18 @@ export function LandingMapBackdrop() {
       ctx.fillStyle = COLORS.bg;
       ctx.fillRect(0, 0, width, height);
 
+      const mobile = isMobileBackdrop();
+      const latSway = mobile ? MOBILE_LAT_SWAY : LAT_SWAY;
+      const latBias = mobile ? MOBILE_LAT_BIAS : 0;
       const lat =
         Math.sin(
           ((timeMs + latPhaseRef.current) / LAT_SWAY_PERIOD_MS) * Math.PI * 2,
-        ) * LAT_SWAY;
+        ) *
+          latSway +
+        latBias;
       const projection = geoMercator()
         .rotate([lonRef.current, lat])
-        .scale(baseScaleRef.current * ZOOM)
+        .scale(baseScaleRef.current * getBackdropZoom())
         .translate([width / 2, height / 2]);
       const path = geoPath(projection, ctx);
 

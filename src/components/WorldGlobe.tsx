@@ -81,6 +81,13 @@ type DragState = {
   velocityLat: number;
 };
 
+type PinchState = {
+  startDistance: number;
+  startZoom: number;
+  midpointX: number;
+  midpointY: number;
+};
+
 function filterTopology(topology: Topology): Topology {
   const countries = topology.objects.countries;
 
@@ -300,6 +307,10 @@ export function WorldGlobe({
     translate: [number, number] | null;
   } | null>(null);
   const dragRef = useRef<DragState | null>(null);
+  const pinchRef = useRef<PinchState | null>(null);
+  const activePointersRef = useRef(
+    new Map<number, { x: number; y: number }>(),
+  );
   const inertiaFrameRef = useRef<number | null>(null);
   const renderFrameRef = useRef<number | null>(null);
 
@@ -747,11 +758,80 @@ export function WorldGlobe({
       }
     };
 
+    const pointerDistance = (
+      a: { x: number; y: number },
+      b: { x: number; y: number },
+    ) => Math.hypot(a.x - b.x, a.y - b.y);
+
+    const beginPinch = () => {
+      const points = [...activePointersRef.current.values()];
+      if (points.length < 2) return;
+      const [a, b] = points;
+      const dist = pointerDistance(a, b);
+      if (dist < 8) return;
+
+      const rect = element.getBoundingClientRect();
+      dragRef.current = null;
+      isDraggingRef.current = true;
+      setIsDragging(true);
+      clearHoverTooltip();
+      pinchRef.current = {
+        startDistance: dist,
+        startZoom: zoomRef.current,
+        midpointX: (a.x + b.x) / 2 - rect.left,
+        midpointY: (a.y + b.y) / 2 - rect.top,
+      };
+    };
+
+    const applyPinchZoom = () => {
+      const pinch = pinchRef.current;
+      if (!pinch) return;
+      const points = [...activePointersRef.current.values()];
+      if (points.length < 2) return;
+
+      const [a, b] = points;
+      const dist = pointerDistance(a, b);
+      if (dist < 8) return;
+
+      const { width, height } = sizeRef.current;
+      if (width <= 0 || height <= 0) return;
+
+      const currentZoom = zoomRef.current;
+      const nextZoom = clampZoom(
+        pinch.startZoom * (dist / pinch.startDistance),
+      );
+      if (nextZoom === currentZoom) return;
+
+      rotationRef.current = rotationAfterZoomAtPoint(
+        rotationRef.current,
+        currentZoom,
+        nextZoom,
+        width,
+        height,
+        pinch.midpointX,
+        pinch.midpointY,
+      );
+      zoomRef.current = nextZoom;
+      schedulePaintRef.current();
+      dismissSelectionIfCountryFar(rotationRef.current, nextZoom);
+    };
+
     const onPointerDown = (event: PointerEvent) => {
-      if (event.button !== 0) return;
+      if (event.button !== 0 && event.pointerType !== 'touch') return;
       if (photoFocusRef.current) return;
       stopInertia();
+
+      activePointersRef.current.set(event.pointerId, {
+        x: event.clientX,
+        y: event.clientY,
+      });
       element.setPointerCapture(event.pointerId);
+
+      if (activePointersRef.current.size >= 2) {
+        beginPinch();
+        return;
+      }
+
       const startRotation: [number, number, number] = [
         rotationRef.current[0],
         rotationRef.current[1],
@@ -773,11 +853,23 @@ export function WorldGlobe({
     };
 
     const onPointerMove = (event: PointerEvent) => {
+      if (activePointersRef.current.has(event.pointerId)) {
+        activePointersRef.current.set(event.pointerId, {
+          x: event.clientX,
+          y: event.clientY,
+        });
+      }
+
+      if (pinchRef.current && activePointersRef.current.size >= 2) {
+        applyPinchZoom();
+        return;
+      }
+
       const drag = dragRef.current;
       const [x, y] = localPoint(event);
 
       if (!drag || drag.pointerId !== event.pointerId) {
-        if (dragRef.current) return;
+        if (dragRef.current || pinchRef.current) return;
         if (photoFocusRef.current) return;
         if (selectedCountryRef.current) {
           clearHoverTooltip();
@@ -843,15 +935,30 @@ export function WorldGlobe({
     };
 
     const endDrag = (event: PointerEvent, cancelled: boolean) => {
+      activePointersRef.current.delete(event.pointerId);
+
+      if (element.hasPointerCapture(event.pointerId)) {
+        element.releasePointerCapture(event.pointerId);
+      }
+
+      if (pinchRef.current) {
+        if (activePointersRef.current.size >= 2) {
+          beginPinch();
+          return;
+        }
+        pinchRef.current = null;
+        dragRef.current = null;
+        isDraggingRef.current = false;
+        setIsDragging(false);
+        schedulePaintRef.current();
+        return;
+      }
+
       const drag = dragRef.current;
       if (!drag || drag.pointerId !== event.pointerId) return;
       dragRef.current = null;
       isDraggingRef.current = false;
       setIsDragging(false);
-
-      if (element.hasPointerCapture(event.pointerId)) {
-        element.releasePointerCapture(event.pointerId);
-      }
 
       if (!cancelled && !drag.moved) {
         const [x, y] = localPoint(event);

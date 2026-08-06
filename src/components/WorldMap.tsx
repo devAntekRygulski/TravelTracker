@@ -221,12 +221,19 @@ function isValidRegionGeometry(geometry: Geometry): boolean {
 }
 
 function mapZoomFilter(event: Event): boolean {
-  if (event.type === 'wheel') {
+  // d3-zoom / ZoomableGroup need touchmove + touchend for pinch zoom.
+  // TouchEvent has no `.button`, so the old `button === 0` check blocked phones.
+  if (event.type === 'wheel' || event.type.startsWith('touch')) {
     return true;
   }
 
-  if (event.type === 'mousedown' || event.type === 'touchstart') {
-    return (event as MouseEvent).button === 0;
+  if (event.type.startsWith('pointer')) {
+    const pointer = event as PointerEvent;
+    return pointer.pointerType === 'touch' || pointer.button === 0;
+  }
+
+  if (event.type === 'mousedown' || event.type === 'mousemove' || event.type === 'mouseup') {
+    return (event as MouseEvent).button === 0 || event.type !== 'mousedown';
   }
 
   return false;

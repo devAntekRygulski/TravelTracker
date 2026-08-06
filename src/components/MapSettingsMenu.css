@@ -1,0 +1,109 @@
+.map-settings-menu {
+  --map-settings-menu-width: min(10.5rem, calc(100vw - 1.5rem));
+  --map-settings-menu-trigger: 2.35rem;
+
+  position: absolute;
+  inset: 0;
+  width: var(--map-settings-menu-trigger);
+  height: var(--map-settings-menu-trigger);
+  pointer-events: auto;
+}
+
+.map-settings-menu--hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.map-settings-menu__trigger {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--map-settings-menu-trigger);
+  height: var(--map-settings-menu-trigger);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  background: transparent;
+  color: #9a9a9a;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    opacity 0.2s ease,
+    transform 0.22s ease;
+}
+
+.map-settings-menu__icon {
+  display: block;
+}
+
+.map-settings-menu__trigger:hover,
+.map-settings-menu__trigger:focus-visible {
+  color: #c8c8c8;
+}
+
+.map-settings-menu__panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--map-settings-menu-trigger);
+  height: var(--map-settings-menu-trigger);
+  overflow: hidden;
+  border: 1px solid #4a4a4a;
+  border-radius: 1rem;
+  background-color: rgba(26, 26, 26, 0.94);
+  backdrop-filter: blur(8px);
+  opacity: 0;
+  pointer-events: none;
+  transform-origin: top left;
+  transition:
+    width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    height 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.14s ease;
+}
+
+.map-settings-menu__panel-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0.55rem;
+  width: var(--map-settings-menu-width);
+  padding: 0.7rem;
+  opacity: 0;
+  transform: translateY(-0.2rem);
+  transition:
+    opacity 0.16s ease,
+    transform 0.26s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.map-settings-menu__panel-inner .map-view-toggle {
+  width: 100%;
+  max-width: none;
+}
+
+.map-settings-menu--open .map-settings-menu__trigger {
+  opacity: 0;
+  transform: scale(0.9);
+  pointer-events: none;
+}
+
+.map-settings-menu--open .map-settings-menu__panel {
+  width: var(--map-settings-menu-width);
+  height: 7.15rem;
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.map-settings-menu--open .map-settings-menu__panel-inner {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: 0.05s;
+}
+
+/* Desktop keeps side toggles + burger — hide gear menu */
+@media (min-width: 641px) {
+  .map-settings-menu {
+    display: none;
+  }
+}

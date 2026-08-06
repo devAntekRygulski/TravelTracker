@@ -25,6 +25,13 @@
   pointer-events: none;
 }
 
+.map-page__top-start {
+  justify-self: start;
+  position: relative;
+  width: 2.35rem;
+  height: 2.35rem;
+}
+
 .map-page__burger {
   justify-self: start;
   display: inline-flex;
@@ -69,21 +76,16 @@
   height: auto;
 }
 
-.map-page__back {
-  justify-self: end;
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #9a9a9a;
-  text-decoration: none;
-  pointer-events: auto;
-  transition: color 0.15s ease;
-}
-
-.map-page__back:hover {
-  color: var(--text-primary);
-  text-decoration: none;
-}
-
 .map-page--loading {
   background-color: var(--bg-primary);
+}
+
+@media (max-width: 640px) {
+  .map-page__top {
+    padding: 0 1rem;
+  }
+
+  .map-page__logo {
+    width: 88px;
+  }
 }

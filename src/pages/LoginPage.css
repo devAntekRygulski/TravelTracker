@@ -76,3 +76,49 @@
 .login-page__privacy:hover {
   color: #b0b0b0;
 }
+
+/* Phone only — enlarge landing logo, copy, and actions */
+@media (max-width: 768px) {
+  .login-page {
+    min-height: 100dvh;
+    padding: 1.25rem 1rem 3rem;
+  }
+
+  .login-page__content {
+    max-width: min(100%, 18rem);
+    gap: 1.4rem;
+  }
+
+  .login-page__logo-wrap {
+    width: min(100%, 17.5rem);
+    height: 6.75rem;
+    margin-bottom: -0.2rem;
+  }
+
+  .login-page__subtitle {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    max-width: 14rem;
+  }
+
+  .login-page__buttons {
+    gap: 0.7rem;
+    width: 100%;
+  }
+
+  .login-page .auth-button {
+    max-width: 100%;
+    padding: 0.75rem 1.05rem;
+    font-size: 0.82rem;
+  }
+
+  .login-page__create-account {
+    font-size: 0.68rem;
+  }
+
+  .login-page__privacy {
+    right: 1rem;
+    bottom: 1rem;
+    font-size: 0.52rem;
+  }
+}
