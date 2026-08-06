@@ -8,12 +8,28 @@ import { pickImagesFromGooglePhotos } from '../lib/googlePhotosPicker';
 import { easeInOutCubic } from '../lib/photoFocus';
 import { PhotoLightbox } from './PhotoLightbox';
 import { PhotoUploadQrPanel } from './PhotoUploadQrPanel';
+import {
+  FolderIcon,
+  GoogleDriveIcon,
+  GooglePhotosIcon,
+} from './UploadSourceIcons';
 import './PhotoFocusFrame.css';
 
 const CLOSE_CSS_SIZE = 18;
 const CLOSE_CSS_LINE = 2;
 const CLOSE_COLOR = '#9a9a9a';
 const CLOSE_COLOR_HOVER = '#ffffff';
+
+type UploadSource = 'local' | 'drive' | 'photos';
+
+function UploadSpinner() {
+  return (
+    <span
+      className="photo-focus-frame__upload-spinner"
+      aria-hidden="true"
+    />
+  );
+}
 
 function paintCloseX(canvas: HTMLCanvasElement, color: string): void {
   const dpr = window.devicePixelRatio || 1;
@@ -66,8 +82,9 @@ export function PhotoFocusFrame({
   const nameImageSrc = getCountryNameImageSrc(countryId);
   const { photos, loading, error, upload, remove, refresh } =
     useCountryPhotos(countryId);
-  const [uploading, setUploading] = useState(false);
+  const [uploadSource, setUploadSource] = useState<UploadSource | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
+  const uploading = uploadSource !== null;
   /** True when the user opens "Add photos" over an existing gallery. */
   const [addingMore, setAddingMore] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -128,10 +145,10 @@ export function PhotoFocusFrame({
     };
   }, []);
 
-  const importFiles = async (files: File[]) => {
+  const importFiles = async (files: File[], source: UploadSource) => {
     if (files.length === 0) return;
 
-    setUploading(true);
+    setUploadSource(source);
     setActionError(null);
 
     try {
@@ -144,7 +161,7 @@ export function PhotoFocusFrame({
           : 'Failed to upload photos',
       );
     } finally {
-      setUploading(false);
+      setUploadSource(null);
 
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
@@ -153,14 +170,15 @@ export function PhotoFocusFrame({
   };
 
   const handleFilesSelected = async (fileList: FileList | null) => {
-    await importFiles(fileList ? [...fileList] : []);
+    await importFiles(fileList ? [...fileList] : [], 'local');
   };
 
   const handleGoogleImport = async (
+    source: Exclude<UploadSource, 'local'>,
     pick: () => Promise<File[]>,
     fallbackMessage: string,
   ) => {
-    setUploading(true);
+    setUploadSource(source);
     setActionError(null);
 
     try {
@@ -174,18 +192,20 @@ export function PhotoFocusFrame({
         importError instanceof Error ? importError.message : fallbackMessage,
       );
     } finally {
-      setUploading(false);
+      setUploadSource(null);
     }
   };
 
   const handleGoogleDriveImport = () =>
     handleGoogleImport(
+      'drive',
       pickImagesFromGoogleDrive,
       'Failed to import from Google Drive',
     );
 
   const handleGooglePhotosImport = () =>
     handleGoogleImport(
+      'photos',
       pickImagesFromGooglePhotos,
       'Failed to import from Google Photos',
     );
@@ -351,31 +371,64 @@ export function PhotoFocusFrame({
               <div className="photo-focus-frame__upload-options">
                 <div className="photo-focus-frame__upload-computer">
                   <p className="photo-focus-frame__upload-label">
-                    Upload from computer
+                    Upload photos from
                   </p>
                   <button
                     type="button"
-                    className="photo-focus-frame__action photo-focus-frame__action--primary"
+                    className="photo-focus-frame__action"
                     disabled={uploading}
+                    aria-busy={uploadSource === 'local'}
+                    aria-label="Local files"
                     onClick={() => fileInputRef.current?.click()}
                   >
-                    {uploading ? 'Uploading…' : 'Choose photos'}
+                    <span className="photo-focus-frame__action-content">
+                      {uploadSource === 'local' ? (
+                        <UploadSpinner />
+                      ) : (
+                        <>
+                          <FolderIcon />
+                          Local files
+                        </>
+                      )}
+                    </span>
                   </button>
                   <button
                     type="button"
-                    className="photo-focus-frame__action photo-focus-frame__action--secondary"
+                    className="photo-focus-frame__action"
                     disabled={uploading}
+                    aria-busy={uploadSource === 'drive'}
+                    aria-label="Google Drive"
                     onClick={() => void handleGoogleDriveImport()}
                   >
-                    Google Drive
+                    <span className="photo-focus-frame__action-content">
+                      {uploadSource === 'drive' ? (
+                        <UploadSpinner />
+                      ) : (
+                        <>
+                          <GoogleDriveIcon />
+                          Google Drive
+                        </>
+                      )}
+                    </span>
                   </button>
                   <button
                     type="button"
-                    className="photo-focus-frame__action photo-focus-frame__action--secondary"
+                    className="photo-focus-frame__action"
                     disabled={uploading}
+                    aria-busy={uploadSource === 'photos'}
+                    aria-label="Google Photos"
                     onClick={() => void handleGooglePhotosImport()}
                   >
-                    Google Photos
+                    <span className="photo-focus-frame__action-content">
+                      {uploadSource === 'photos' ? (
+                        <UploadSpinner />
+                      ) : (
+                        <>
+                          <GooglePhotosIcon />
+                          Google Photos
+                        </>
+                      )}
+                    </span>
                   </button>
                 </div>
 

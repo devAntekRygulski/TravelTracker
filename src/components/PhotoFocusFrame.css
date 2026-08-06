@@ -111,6 +111,9 @@
 }
 
 .photo-focus-frame__action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: 0.55rem 1.15rem;
   border: 1px solid #4a4a4a;
   border-radius: 9999px;
@@ -128,14 +131,52 @@
     transform 0.15s ease;
 }
 
-.photo-focus-frame__action--primary {
-  border-color: var(--yellow-bright, #f5c518);
-  color: var(--yellow-bright, #f5c518);
+.photo-focus-frame__action-content {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+}
+
+/* Must beat `.world-map svg { width/height: 100% }` — frame lives inside the map. */
+.photo-focus-frame .photo-focus-frame__action-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  max-width: 1.05rem;
+  max-height: 1.05rem;
+  flex: 0 0 1.05rem;
+  display: block;
+  overflow: hidden;
+}
+
+.photo-focus-frame__action-icon--mono {
+  color: inherit;
+}
+
+.photo-focus-frame .photo-focus-frame__upload-spinner,
+.photo-focus-frame__upload-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  max-width: 0.9rem;
+  max-height: 0.9rem;
+  flex: 0 0 0.9rem;
+  box-sizing: border-box;
+  border: 2px solid rgba(245, 197, 24, 0.25);
+  border-top-color: var(--yellow-bright, #f5c518);
+  border-radius: 50%;
+  animation: photo-focus-upload-spin 0.7s linear infinite;
+}
+
+@keyframes photo-focus-upload-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .photo-focus-frame__action:hover:not(:disabled),
 .photo-focus-frame__action:focus-visible:not(:disabled) {
   color: var(--yellow-bright, #f5c518);
+  border-color: var(--yellow-bright, #f5c518);
   filter: brightness(1.06);
 }
 
@@ -331,9 +372,6 @@
 
 .photo-focus-frame__upload-computer .photo-focus-frame__action {
   min-width: 11.5rem;
-}
-
-.photo-focus-frame__action--secondary {
   border-color: #4a4a4a;
   color: #c8c8c8;
 }
@@ -377,15 +415,26 @@
   border: 1px solid #4a4a4a;
   border-radius: 9999px;
   background: transparent;
-  color: #9a9a9a;
+  color: #c8c8c8;
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    filter 0.15s ease,
+    transform 0.15s ease;
 }
 
 .photo-focus-frame__cancel-add:hover,
 .photo-focus-frame__cancel-add:focus-visible {
-  color: #e4e4e4;
+  color: var(--yellow-bright, #f5c518);
+  border-color: var(--yellow-bright, #f5c518);
+  filter: brightness(1.06);
+}
+
+.photo-focus-frame__cancel-add:active {
+  transform: scale(0.98);
 }
 
 .photo-focus-frame__add-photos {

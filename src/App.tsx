@@ -3,6 +3,7 @@ import { AuthProvider } from './context/AuthContext';
 import { AccountPage } from './pages/AccountPage';
 import { LoginPage } from './pages/LoginPage';
 import { LoginFormPage } from './pages/LoginFormPage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
 import { SignupPage } from './pages/SignupPage';
 import { MapPage } from './pages/MapPage';
 import { UploadPage } from './pages/UploadPage';
@@ -17,6 +18,7 @@ function App() {
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/map" element={<MapPage />} />
           <Route path="/account" element={<AccountPage />} />
+          <Route path="/privacy" element={<PrivacyPolicyPage />} />
           <Route path="/upload/:token" element={<UploadPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

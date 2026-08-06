@@ -62,3 +62,15 @@
   color: var(--text-primary);
   text-decoration: none;
 }
+
+.login-page__privacy {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #7a7a7a;
+  text-align: center;
+  text-decoration: none;
+}
+
+.login-page__privacy:hover {
+  color: #b0b0b0;
+}

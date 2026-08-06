@@ -56,7 +56,7 @@ const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 16;
 const WHEEL_ZOOM_SENSITIVITY = 0.0015;
 const INITIAL_ROTATION: [number, number, number] = [-10, -20, 0];
-const INITIAL_ZOOM = 0.78;
+const INITIAL_ZOOM = 1.15;
 
 interface WorldGlobeProps {
   isVisited: (countryId: string) => boolean;

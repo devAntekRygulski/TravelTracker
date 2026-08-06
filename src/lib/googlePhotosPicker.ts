@@ -171,6 +171,21 @@ async function downloadPickedImage(
   return new File([blob], name, { type });
 }
 
+/** Append /autoclose without breaking query strings on pickerUri. */
+function withAutoclose(pickerUri: string): string {
+  if (pickerUri.includes('/autoclose')) {
+    return pickerUri;
+  }
+
+  try {
+    const url = new URL(pickerUri);
+    url.pathname = `${url.pathname.replace(/\/+$/, '')}/autoclose`;
+    return url.toString();
+  } catch {
+    return `${pickerUri.replace(/\/+$/, '')}/autoclose`;
+  }
+}
+
 function waitForPickerSelection(
   session: PickingSession,
   accessToken: string,
@@ -182,19 +197,12 @@ function waitForPickerSelection(
   );
   const timeoutMs = parseDurationMs(session.pollingConfig?.timeoutIn, 5 * 60_000);
   const startedAt = Date.now();
+  let closedPolls = 0;
 
   return new Promise((resolve, reject) => {
     const timer = window.setInterval(() => {
       void (async () => {
         try {
-          if (popup && popup.closed) {
-            // Give a final status check in case Done closed the window.
-            const latest = await getSession(session.id, accessToken);
-            window.clearInterval(timer);
-            resolve(Boolean(latest.mediaItemsSet));
-            return;
-          }
-
           if (Date.now() - startedAt > timeoutMs) {
             window.clearInterval(timer);
             reject(new Error('Google Photos picker timed out'));
@@ -205,7 +213,21 @@ function waitForPickerSelection(
           if (latest.mediaItemsSet) {
             window.clearInterval(timer);
             resolve(true);
+            return;
           }
+
+          // Wait through a few closed polls before treating as cancel —
+          // /autoclose can race ahead of mediaItemsSet.
+          if (popup?.closed) {
+            closedPolls += 1;
+            if (closedPolls >= 3) {
+              window.clearInterval(timer);
+              resolve(false);
+            }
+            return;
+          }
+
+          closedPolls = 0;
         } catch (error) {
           window.clearInterval(timer);
           reject(error);
@@ -219,12 +241,17 @@ function waitForPickerSelection(
 export async function pickImagesFromGooglePhotos(): Promise<File[]> {
   const accessToken = await requestGoogleAccessToken(GOOGLE_PHOTOS_PICKER_SCOPE);
   const session = await createSession(accessToken);
+  const pickerUrl = withAutoclose(session.pickerUri);
 
-  const pickerUrl = session.pickerUri.endsWith('/autoclose')
-    ? session.pickerUri
-    : `${session.pickerUri.replace(/\/+$/, '')}/autoclose`;
+  // Open as a normal tab (Uppy-style). Named popups are more brittle with Google Photos.
+  const popup = window.open(pickerUrl, '_blank');
 
-  const popup = window.open(pickerUrl, 'google-photos-picker', 'popup=yes,width=1100,height=800');
+  if (!popup) {
+    await deleteSession(session.id, accessToken);
+    throw new Error(
+      'Pop-up blocked. Allow pop-ups for this site and try Google Photos again.',
+    );
+  }
 
   try {
     const completed = await waitForPickerSelection(session, accessToken, popup);
@@ -244,7 +271,7 @@ export async function pickImagesFromGooglePhotos(): Promise<File[]> {
 
     return files;
   } finally {
-    if (popup && !popup.closed) {
+    if (!popup.closed) {
       popup.close();
     }
     await deleteSession(session.id, accessToken);
