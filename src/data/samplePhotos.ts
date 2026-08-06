@@ -17,9 +17,9 @@ export const SAMPLE_PHOTOS: SamplePhoto[] = [
     alt: 'Snowy mountain peaks',
   },
   {
-    id: 'beach',
-    src: '/sample-photos/beach.jpg',
-    alt: 'Sandy beach shoreline',
+    id: 'dusk-mountains',
+    src: '/sample-photos/dusk-mountains.jpg',
+    alt: 'Night sky over snowy mountain peaks',
   },
   {
     id: 'food',
