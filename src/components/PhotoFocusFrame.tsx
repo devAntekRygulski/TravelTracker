@@ -3,6 +3,8 @@ import { getCountryNameImageSrc } from '../data/countryNameImages';
 import { SAMPLE_PHOTOS } from '../data/samplePhotos';
 import { useCountryPhotos } from '../hooks/useCountryPhotos';
 import { useGuestPendingClaim } from '../hooks/useGuestPendingClaim';
+import { pickImagesFromGoogleDrive } from '../lib/googleDrivePicker';
+import { pickImagesFromGooglePhotos } from '../lib/googlePhotosPicker';
 import { easeInOutCubic } from '../lib/photoFocus';
 import { PhotoLightbox } from './PhotoLightbox';
 import { PhotoUploadQrPanel } from './PhotoUploadQrPanel';
@@ -126,9 +128,7 @@ export function PhotoFocusFrame({
     };
   }, []);
 
-  const handleFilesSelected = async (fileList: FileList | null) => {
-    const files = fileList ? [...fileList] : [];
-
+  const importFiles = async (files: File[]) => {
     if (files.length === 0) return;
 
     setUploading(true);
@@ -151,6 +151,44 @@ export function PhotoFocusFrame({
       }
     }
   };
+
+  const handleFilesSelected = async (fileList: FileList | null) => {
+    await importFiles(fileList ? [...fileList] : []);
+  };
+
+  const handleGoogleImport = async (
+    pick: () => Promise<File[]>,
+    fallbackMessage: string,
+  ) => {
+    setUploading(true);
+    setActionError(null);
+
+    try {
+      const files = await pick();
+      if (files.length === 0) return;
+
+      await upload(files);
+      setAddingMore(false);
+    } catch (importError) {
+      setActionError(
+        importError instanceof Error ? importError.message : fallbackMessage,
+      );
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleGoogleDriveImport = () =>
+    handleGoogleImport(
+      pickImagesFromGoogleDrive,
+      'Failed to import from Google Drive',
+    );
+
+  const handleGooglePhotosImport = () =>
+    handleGoogleImport(
+      pickImagesFromGooglePhotos,
+      'Failed to import from Google Photos',
+    );
 
   const handlePhonePhotosChanged = useCallback(() => {
     void (async () => {
@@ -322,6 +360,22 @@ export function PhotoFocusFrame({
                     onClick={() => fileInputRef.current?.click()}
                   >
                     {uploading ? 'Uploading…' : 'Choose photos'}
+                  </button>
+                  <button
+                    type="button"
+                    className="photo-focus-frame__action photo-focus-frame__action--secondary"
+                    disabled={uploading}
+                    onClick={() => void handleGoogleDriveImport()}
+                  >
+                    Google Drive
+                  </button>
+                  <button
+                    type="button"
+                    className="photo-focus-frame__action photo-focus-frame__action--secondary"
+                    disabled={uploading}
+                    onClick={() => void handleGooglePhotosImport()}
+                  >
+                    Google Photos
                   </button>
                 </div>
 
