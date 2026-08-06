@@ -38,10 +38,10 @@ export function LoginPage() {
         <Link className="login-page__create-account" to="/signup">
           Create an account
         </Link>
-        <Link className="login-page__privacy" to="/privacy">
-          Privacy Policy
-        </Link>
       </div>
+      <Link className="login-page__privacy" to="/privacy">
+        Privacy Policy
+      </Link>
     </div>
   );
 }

@@ -17,9 +17,11 @@ export function PrivacyPolicyPage() {
 
         <p>
           Travel Tracker (“we”, “our”, or “the Service”) at{' '}
-          <a href={SITE_URL}>{SITE_URL}</a> helps you track countries you have
-          visited and attach travel photos to those countries. This Privacy
-          Policy explains what information we collect and how we use it.
+          <a href={SITE_URL}>{SITE_URL}</a> is a travel mapping app that lets
+          you mark countries you have visited and attach travel photos to those
+          countries. This Privacy Policy explains what information we collect,
+          how we use it, and how we handle Google user data when you choose to
+          import photos from Google Drive or Google Photos.
         </p>
 
         <h2>Information we collect</h2>
@@ -47,23 +49,47 @@ export function PrivacyPolicyPage() {
           </li>
         </ul>
 
-        <h2>Google Drive and Google Photos</h2>
+        <h2>Google user data (Google Drive and Google Photos)</h2>
         <p>
           If you use <strong>Google Drive</strong> or{' '}
           <strong>Google Photos</strong> import, we use Google’s official picker
           interfaces so you can select specific images. We only receive the
-          files (or file content) you explicitly select. We do not scrape your
-          full Google Drive or Google Photos library.
+          image files (or file content) you explicitly select. We do not request
+          or scrape your full Google Drive library or full Google Photos
+          library.
         </p>
         <p>
-          Access is requested only for the limited scopes needed to let you pick
-          and download those selected images into Travel Tracker. We use that
-          content solely to store the photos in your Travel Tracker country
-          gallery at your request.
+          Access is requested only for the limited OAuth scopes needed to let
+          you pick and download those selected images into Travel Tracker
+          (Google Drive file access for picked files, and Google Photos Picker
+          read access for selected media items).
         </p>
         <p>
-          Travel Tracker’s use and transfer of information received from Google
-          APIs adheres to the{' '}
+          <strong>How we use Google user data:</strong> solely to import the
+          photos you select into your Travel Tracker country gallery, store them
+          as described below, and display them back to you in the Service. This
+          is a user-facing feature that you control.
+        </p>
+        <p>
+          <strong>How we store Google user data:</strong> for signed-in users,
+          imported photo files are stored in our cloud storage (Amazon S3) and
+          referenced in our database so they appear in your account gallery. For
+          guests, imported photos are stored locally in your browser on that
+          device.
+        </p>
+        <p>
+          <strong>How we share Google user data:</strong> we do not sell Google
+          user data. We do not share Google user data with third parties for
+          advertising, data brokerage, or unrelated products. Service providers
+          that help us operate the Service (such as hosting, database, and cloud
+          storage providers) may process stored photo files only to provide
+          those infrastructure services to us, under our instructions.
+        </p>
+
+        <h2>Google API Services User Data Policy / Limited Use</h2>
+        <p>
+          Travel Tracker’s use and transfer to any other app of information
+          received from Google APIs will adhere to the{' '}
           <a
             href="https://developers.google.com/terms/api-services-user-data-policy"
             target="_blank"
@@ -73,12 +99,41 @@ export function PrivacyPolicyPage() {
           </a>
           , including the Limited Use requirements.
         </p>
+        <p>In particular, Google user data obtained through Google APIs is:</p>
+        <ul>
+          <li>
+            Used only to provide or improve user-facing features that are
+            prominent in Travel Tracker (importing selected photos into your
+            country galleries)
+          </li>
+          <li>Not sold to third parties</li>
+          <li>
+            Not used for serving advertisements, including personalized or
+            retargeted ads
+          </li>
+          <li>
+            Not used to determine credit-worthiness or for lending purposes
+          </li>
+          <li>
+            Not used to train, improve, or develop generalized / non-personalized
+            artificial intelligence or machine learning models
+          </li>
+          <li>
+            Not transferred to other apps, sites, or services except as necessary
+            to operate Travel Tracker for you (for example, storing your imported
+            photos in our cloud storage) or as required by law
+          </li>
+        </ul>
 
-        <h2>How we use information</h2>
+        <h2>How we use other information</h2>
         <ul>
           <li>To provide and maintain your map, account, and photo galleries</li>
-          <li>To authenticate you and keep your data associated with your account</li>
-          <li>To enable optional features such as phone QR upload and Google import</li>
+          <li>
+            To authenticate you and keep your data associated with your account
+          </li>
+          <li>
+            To enable optional features such as phone QR upload and Google import
+          </li>
           <li>To improve reliability and fix errors in the Service</li>
         </ul>
         <p>We do not sell your personal information.</p>
@@ -105,21 +160,48 @@ export function PrivacyPolicyPage() {
           if required by law.
         </p>
 
-        <h2>Data retention</h2>
+        <h2>Data retention and deletion</h2>
         <p>
           We retain account data and uploaded photos while your account remains
           active. You may delete individual photos in the app. If you want your
-          account and associated data deleted, contact us at the email below.
-          Guest data remains on your device until you clear it.
+          account and associated data deleted, contact us at the email below and
+          we will delete your account data and stored photos associated with
+          that account. Guest data remains on your device until you clear it.
+        </p>
+        <p>
+          You can revoke Travel Tracker’s access to your Google Account at any
+          time through your Google Account permissions. Revoking access stops
+          future Google imports; photos already imported into Travel Tracker
+          remain in your Travel Tracker gallery until you delete them or request
+          account deletion.
         </p>
 
         <h2>Your choices</h2>
         <ul>
           <li>Use the app as a guest without creating an account</li>
           <li>Choose whether to import from Google Drive or Google Photos</li>
-          <li>Revoke Google access anytime in your Google Account permissions</li>
+          <li>
+            Revoke Google access anytime in your{' '}
+            <a
+              href="https://myaccount.google.com/permissions"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Google Account permissions
+            </a>
+          </li>
           <li>Delete photos from a country gallery in the app</li>
+          <li>Request account and data deletion by emailing us</li>
         </ul>
+
+        <h2>Security</h2>
+        <p>
+          We take reasonable measures to protect account and photo data,
+          including using encrypted connections (HTTPS) in production and
+          restricting access to production systems and credentials. No method of
+          transmission or storage is completely secure, and we cannot guarantee
+          absolute security.
+        </p>
 
         <h2>Children</h2>
         <p>
@@ -127,11 +209,13 @@ export function PrivacyPolicyPage() {
           knowingly collect personal information from children under 13.
         </p>
 
-        <h2>Changes</h2>
+        <h2>Changes to this Privacy Policy</h2>
         <p>
           We may update this Privacy Policy from time to time. The “Last updated”
-          date at the top will change when we do. Continued use of the Service
-          after an update means you accept the revised policy.
+          date at the top will change when we do. If we change how we use Google
+          user data in a material way, we will update this Privacy Policy and,
+          where required, ask you to review and consent before using Google user
+          data for that new purpose.
         </p>
 
         <h2>Contact</h2>
