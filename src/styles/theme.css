@@ -8,6 +8,8 @@
   --yellow-dim: #a68b1b;
   /* Country outline stroke — bright on dark, deeper on light. */
   --yellow-map: #f5c518;
+  /* Unvisited country hover / selection fill. */
+  --map-hover: #3d3d3d;
   --text-primary: #f0f0f0;
   --text-dark: #1a1a1a;
   --text-muted: #9a9a9a;
@@ -28,6 +30,7 @@
   --yellow-bright: #f5c518;
   --yellow-dim: #a68b1b;
   --yellow-map: #8a6f0a;
+  --map-hover: #faf8f5;
   --text-primary: #1c1c1c;
   --text-dark: #1a1a1a;
   --text-muted: #6b6b6b;

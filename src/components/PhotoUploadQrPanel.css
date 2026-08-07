@@ -8,7 +8,7 @@
 
 .photo-upload-qr-panel__label {
   margin: 0;
-  color: #e4e4e4;
+  color: var(--text-primary);
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
@@ -19,7 +19,7 @@
 .photo-upload-qr-panel__hint,
 .photo-upload-qr-panel__timer {
   margin: 0;
-  color: #9a9a9a;
+  color: var(--text-muted);
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
 }
@@ -40,6 +40,10 @@
   line-height: 0;
 }
 
+[data-theme='light'] .photo-upload-qr-panel__code {
+  border: 1px solid var(--border);
+}
+
 .photo-upload-qr-panel__expired {
   position: absolute;
   inset: 0;
@@ -47,8 +51,8 @@
   align-items: center;
   justify-content: center;
   border-radius: 0.65rem;
-  background: rgba(20, 20, 20, 0.82);
-  color: #e4e4e4;
+  background: color-mix(in srgb, var(--bg-dark) 82%, transparent);
+  color: var(--text-primary);
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.06em;

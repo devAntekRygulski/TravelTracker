@@ -58,7 +58,7 @@ const EXCLUDED_COUNTRY_IDS = new Set(['010', '260']);
 /** CSS vars so land/ocean follow dark/light mode without remounting. */
 const COLORS = {
   bg: 'var(--bg-primary)',
-  hover: 'var(--bg-hover)',
+  hover: 'var(--map-hover)',
   yellow: 'var(--yellow-bright)',
   mapStroke: 'var(--yellow-map)',
 };

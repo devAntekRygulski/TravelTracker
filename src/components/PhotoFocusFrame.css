@@ -87,7 +87,7 @@
 
 .photo-focus-frame__close:hover,
 .photo-focus-frame__close:focus-visible {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .photo-focus-frame__close-icon {
@@ -117,7 +117,7 @@
   padding: 0.55rem 1.15rem;
   border: 1px solid var(--border);
   border-radius: 9999px;
-  background-color: rgba(26, 26, 26, 0.92);
+  background-color: var(--panel-bg);
   color: var(--text-primary);
   font-size: 0.82rem;
   font-weight: 600;
@@ -203,7 +203,7 @@
 
 .photo-focus-frame__empty {
   margin: 2.5rem 0 0;
-  color: #7a7a7a;
+  color: var(--text-muted);
   font-size: 0.85rem;
   text-align: center;
 }
@@ -279,7 +279,7 @@
   border-radius: 0.55rem;
   overflow: hidden;
   background: var(--bg-dark);
-  border: 1px solid #3a3a3a;
+  border: 1px solid var(--border);
 }
 
 .photo-focus-frame__delete {
@@ -294,8 +294,8 @@
   padding: 0;
   border: none;
   border-radius: 9999px;
-  background: rgba(15, 15, 15, 0.75);
-  color: #d8d8d8;
+  background: var(--panel-bg-strong);
+  color: var(--text-primary);
   font-size: 0.95rem;
   line-height: 1;
   cursor: pointer;
@@ -311,7 +311,7 @@
 }
 
 .photo-focus-frame__delete:hover {
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .photo-focus-frame__thumb-button {
@@ -348,7 +348,7 @@
   justify-content: center;
   padding: 1rem;
   box-sizing: border-box;
-  background: rgba(26, 26, 26, 0.18);
+  background: color-mix(in srgb, var(--bg-dark) 35%, transparent);
 }
 
 .photo-focus-frame__upload-options {
@@ -378,7 +378,7 @@
 
 .photo-focus-frame__upload-label {
   margin: 0;
-  color: #e4e4e4;
+  color: var(--text-primary);
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 700;
@@ -396,7 +396,7 @@
 .photo-focus-frame__upload-divider-line {
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.16);
+  background: var(--border);
 }
 
 .photo-focus-frame__upload-divider-text {
@@ -446,7 +446,7 @@
   padding: 0.5rem 1.05rem;
   border: 1px solid var(--border);
   border-radius: 9999px;
-  background-color: rgba(26, 26, 26, 0.92);
+  background-color: var(--panel-bg);
   color: var(--text-primary);
   font-size: 0.78rem;
   font-weight: 600;

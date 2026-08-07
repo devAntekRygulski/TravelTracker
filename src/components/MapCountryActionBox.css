@@ -64,9 +64,13 @@
 }
 
 .map-country-action__mark {
-  background-color: #3a3a3a;
+  background-color: var(--bg-hover);
   color: var(--text-primary);
-  border: 1px solid #5a5a5a;
+  border: 1px solid var(--border);
+}
+
+[data-theme='light'] .map-country-action__mark {
+  background-color: #f0eeeb;
 }
 
 .map-country-action__photos {

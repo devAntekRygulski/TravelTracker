@@ -43,7 +43,7 @@ const BORDER_WIDTH = 0.3;
 const DRAG_CLICK_THRESHOLD_PX = 5;
 /** Dismiss the country action box once the country drifts this far from it. */
 const SELECTION_DISMISS_DISTANCE_PX = 110;
-const ROTATION_SENSITIVITY = 0.35;
+const ROTATION_SENSITIVITY = 0.2;
 const MAX_LATITUDE = 89;
 const INERTIA_FRICTION = 0.92;
 const MIN_INERTIA_SPEED = 0.04;
@@ -254,14 +254,36 @@ function rotationAfterZoomAtPoint(
   ];
 }
 
+/** True when the pointer sits on the visible orthographic disk (not empty space). */
+function isPointerOnGlobe(
+  projection: GeoProjection,
+  localX: number,
+  localY: number,
+): boolean {
+  const translate = projection.translate();
+  const radius = projection.scale();
+  if (!translate || !(radius > 0)) return false;
+  const dx = localX - translate[0];
+  const dy = localY - translate[1];
+  // Tiny inset so the rim doesn't pick through the silhouette edge.
+  const maxR = radius * 0.998;
+  return dx * dx + dy * dy <= maxR * maxR;
+}
+
 function findCountryAtPoint(
   countries: CountryFeature[],
   projection: GeoProjection,
   localX: number,
   localY: number,
 ): string | null {
+  if (!isPointerOnGlobe(projection, localX, localY)) return null;
+
   const inverted = projection.invert?.([localX, localY]);
   if (!inverted) return null;
+
+  // Reject back-hemisphere / invalid inversions (clipAngle(90) hides these).
+  const reproj = projection(inverted);
+  if (!reproj) return null;
 
   for (let i = countries.length - 1; i >= 0; i -= 1) {
     const country = countries[i];
@@ -281,7 +303,7 @@ export function WorldGlobe({
   const { palette } = useTheme();
   const colorsRef = useRef({
     bg: palette.bgPrimary,
-    hover: palette.bgHover,
+    hover: palette.mapHover,
     yellow: palette.yellow,
     mapStroke: palette.yellowMap,
     sphereStroke: palette.border,
@@ -381,7 +403,7 @@ export function WorldGlobe({
   useEffect(() => {
     colorsRef.current = {
       bg: palette.bgPrimary,
-      hover: palette.bgHover,
+      hover: palette.mapHover,
       yellow: palette.yellow,
       mapStroke: palette.yellowMap,
       sphereStroke: palette.border,
@@ -685,17 +707,30 @@ export function WorldGlobe({
       return [event.clientX - rect.left, event.clientY - rect.top];
     };
 
-    const countryAtEvent = (event: PointerEvent): string | null => {
-      const [x, y] = localPoint(event);
+    const currentProjection = () => {
       const { width, height } = sizeRef.current;
-      const projection = createProjection(
+      return createProjection(
         width,
         height,
         rotationRef.current,
         zoomRef.current,
         translateRef.current ?? undefined,
       );
-      return findCountryAtPoint(countriesRef.current, projection, x, y);
+    };
+
+    const isEventOnGlobe = (event: PointerEvent | WheelEvent): boolean => {
+      const [x, y] = localPoint(event);
+      return isPointerOnGlobe(currentProjection(), x, y);
+    };
+
+    const countryAtEvent = (event: PointerEvent): string | null => {
+      const [x, y] = localPoint(event);
+      return findCountryAtPoint(
+        countriesRef.current,
+        currentProjection(),
+        x,
+        y,
+      );
     };
 
     const flushRotation = (next: [number, number, number]) => {
@@ -837,6 +872,8 @@ export function WorldGlobe({
     const onPointerDown = (event: PointerEvent) => {
       if (event.button !== 0 && event.pointerType !== 'touch') return;
       if (photoFocusRef.current) return;
+      // Only grab / spin when the press starts on the visible globe.
+      if (!isEventOnGlobe(event)) return;
       stopInertia();
 
       activePointersRef.current.set(event.pointerId, {
@@ -1030,8 +1067,9 @@ export function WorldGlobe({
     };
 
     const onWheel = (event: WheelEvent) => {
-      event.preventDefault();
       if (photoFocusRef.current) return;
+      if (!isEventOnGlobe(event)) return;
+      event.preventDefault();
       const { width, height } = sizeRef.current;
       if (width <= 0 || height <= 0) return;
 
