@@ -14,12 +14,12 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  gap: 1.75rem;
+  gap: 1.1rem;
   width: 100%;
   max-width: none;
   flex: 1;
   min-height: 100dvh;
-  padding: 3rem 1.25rem 1.75rem;
+  padding: 2.25rem 1.25rem 1.5rem;
   border: none;
   border-radius: 0;
   background: #1e1e1e;
@@ -28,10 +28,10 @@
 }
 
 .upload-page__logo-wrap {
-  width: min(92vw, 420px);
+  width: min(58vw, 220px);
   line-height: 0;
-  margin-top: 0.5rem;
-  margin-bottom: 1rem;
+  margin-top: 0.25rem;
+  margin-bottom: 0.35rem;
 }
 
 .upload-page__logo {
@@ -44,35 +44,35 @@
   margin: 0;
   color: #e4e4e4;
   font-family: 'Outfit', system-ui, sans-serif;
-  font-size: clamp(2.6rem, 11vw, 3.6rem);
+  font-size: clamp(1.45rem, 6.5vw, 1.85rem);
   font-weight: 700;
   letter-spacing: 0.03em;
   text-transform: uppercase;
   line-height: 1.08;
-  max-width: 11ch;
+  max-width: 14ch;
 }
 
 .upload-page__text {
   margin: 0;
   color: #9a9a9a;
-  font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+  font-size: clamp(0.95rem, 3.8vw, 1.1rem);
   line-height: 1.4;
-  max-width: 18ch;
+  max-width: 22ch;
 }
 
 .upload-page__success {
   margin: 0;
   color: #9fce8f;
-  font-size: clamp(1.3rem, 5.2vw, 1.6rem);
+  font-size: clamp(0.9rem, 3.6vw, 1.05rem);
   line-height: 1.4;
-  max-width: 18ch;
+  max-width: 22ch;
 }
 
 .upload-page__error {
   margin: 0;
   color: #e08585;
-  font-size: clamp(1.25rem, 5vw, 1.5rem);
-  max-width: 18ch;
+  font-size: clamp(0.9rem, 3.5vw, 1.05rem);
+  max-width: 22ch;
 }
 
 .upload-page__file-input {
@@ -80,15 +80,15 @@
 }
 
 .upload-page__button {
-  margin-top: 2.5rem;
+  margin-top: 1.25rem;
   width: 100%;
-  max-width: none;
-  padding: 1.55rem 1.5rem;
-  border: 3px solid var(--yellow-bright, #f5c518);
+  max-width: 16rem;
+  padding: 0.85rem 1.15rem;
+  border: 2px solid var(--yellow-bright, #f5c518);
   border-radius: 9999px;
   background: transparent;
   color: var(--yellow-bright, #f5c518);
-  font-size: clamp(1.45rem, 6vw, 1.85rem);
+  font-size: clamp(0.95rem, 4vw, 1.1rem);
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -120,13 +120,44 @@
     min-height: min(96dvh, 52rem);
     flex: 0 1 auto;
     justify-content: flex-start;
+    gap: 1.75rem;
     padding: 3.5rem 3rem 2.5rem;
     border: 1px solid #3a3a3a;
     border-radius: 1.5rem;
     background: #1e1e1e;
   }
 
+  .upload-page__logo-wrap {
+    width: min(92vw, 420px);
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .upload-page__heading {
+    font-size: clamp(2.6rem, 11vw, 3.6rem);
+    max-width: 11ch;
+  }
+
+  .upload-page__text {
+    font-size: clamp(1.35rem, 5.5vw, 1.7rem);
+    max-width: 18ch;
+  }
+
+  .upload-page__success {
+    font-size: clamp(1.3rem, 5.2vw, 1.6rem);
+    max-width: 18ch;
+  }
+
+  .upload-page__error {
+    font-size: clamp(1.25rem, 5vw, 1.5rem);
+    max-width: 18ch;
+  }
+
   .upload-page__button {
+    margin-top: 2.5rem;
     max-width: 28rem;
+    padding: 1.55rem 1.5rem;
+    border-width: 3px;
+    font-size: clamp(1.45rem, 6vw, 1.85rem);
   }
 }
