@@ -3,9 +3,9 @@
   width: 100%;
   max-width: 150px;
   padding: 0.15rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
-  background-color: rgba(26, 26, 26, 0.88);
+  background-color: var(--panel-bg);
 }
 
 .map-view-toggle__option {
@@ -19,7 +19,7 @@
   border: none;
   border-radius: 9999px;
   background: transparent;
-  color: #9a9a9a;
+  color: var(--text-muted);
   font-size: 0.68rem;
   font-weight: 600;
   line-height: 1.15;
@@ -53,5 +53,5 @@
 }
 
 .map-view-toggle__option:disabled:hover {
-  color: #9a9a9a;
+  color: var(--text-muted);
 }

@@ -15,11 +15,11 @@
 .photo-focus-territories__link {
   margin: 0;
   padding: 0.45rem 0.95rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
-  background-color: rgba(26, 26, 26, 0.88);
+  background-color: var(--panel-bg);
   backdrop-filter: blur(8px);
-  color: #c8c8c8;
+  color: var(--text-primary);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.01em;

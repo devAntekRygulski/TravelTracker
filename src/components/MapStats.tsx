@@ -1,10 +1,7 @@
 import { TOTAL_MAP_COUNTRIES } from '../data/mapCountries';
 import './MapStats.css';
-import {
-  MapProjectionToggle,
-  type MapProjectionMode,
-} from './MapProjectionToggle';
-import { MapViewToggle } from './MapViewToggle';
+import type { MapProjectionMode } from './MapProjectionToggle';
+import { MapSettingsMenu } from './MapSettingsMenu';
 
 interface MapStatsProps {
   countriesVisited: number;
@@ -75,38 +72,34 @@ export function MapStats({
   return (
     <aside className="map-stats" aria-label="Travel statistics">
       <div
-        className={`map-stats__toggles map-stats__toggles--desktop${
-          hideToggles ? ' map-stats__toggles--hidden' : ''
-        }`}
+        className={`map-stats__bottom${hideToggles ? ' map-stats__bottom--hidden' : ''}`}
         aria-hidden={hideToggles}
       >
-        <MapViewToggle
-          regionalViewLocked={regionalViewLocked}
-          onChange={onRegionalViewChange}
-          regionalDisabled={projectionMode === 'globe'}
-        />
-        <MapProjectionToggle
-          mode={projectionMode}
-          onChange={onProjectionModeChange}
-        />
-      </div>
-
-      <div
-        className={`map-stats__counters${hideToggles ? ' map-stats__counters--hidden' : ''}`}
-        aria-hidden={hideToggles}
-      >
-        <div className="map-stats__item">
-          <PercentStat value={percentVisited} />
-          <span className="map-stats__label">of countries visited</span>
+        <div className="map-stats__bottom-start">
+          <MapSettingsMenu
+            placement="oval"
+            regionalViewLocked={regionalViewLocked}
+            onRegionalViewChange={onRegionalViewChange}
+            projectionMode={projectionMode}
+            onProjectionModeChange={onProjectionModeChange}
+            hidden={hideToggles}
+          />
         </div>
-        <div className="map-stats__item">
-          <StatNumber value={countriesVisited} />
-          <span className="map-stats__label">countries visited</span>
+        <div className="map-stats__counters">
+          <div className="map-stats__item">
+            <PercentStat value={percentVisited} />
+            <span className="map-stats__label">of countries visited</span>
+          </div>
+          <div className="map-stats__item">
+            <StatNumber value={countriesVisited} />
+            <span className="map-stats__label">countries visited</span>
+          </div>
+          <div className="map-stats__item">
+            <StatNumber value={continentsVisited} />
+            <span className="map-stats__label">continents visited</span>
+          </div>
         </div>
-        <div className="map-stats__item">
-          <StatNumber value={continentsVisited} />
-          <span className="map-stats__label">continents visited</span>
-        </div>
+        <div className="map-stats__bottom-end" aria-hidden="true" />
       </div>
     </aside>
   );

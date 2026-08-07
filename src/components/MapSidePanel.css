@@ -30,9 +30,9 @@
   width: var(--map-side-panel-trigger);
   height: var(--map-side-panel-trigger);
   overflow: hidden;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background-color: rgba(26, 26, 26, 0.94);
+  background-color: var(--panel-bg-strong);
   backdrop-filter: blur(8px);
   opacity: 0;
   pointer-events: none;
@@ -59,9 +59,9 @@
 .map-side-panel__button {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
-  background-color: rgba(26, 26, 26, 0.88);
+  background-color: var(--panel-bg);
   color: var(--text-primary);
   font-size: 0.9rem;
   font-weight: 600;

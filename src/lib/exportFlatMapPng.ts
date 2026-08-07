@@ -2,6 +2,7 @@ import { geoMercator, geoPath } from 'd3-geo';
 import { feature, mesh } from 'topojson-client';
 import type { FeatureCollection, Geometry, MultiLineString } from 'geojson';
 import type { Topology } from 'topojson-specification';
+import { getColorPalette, getStoredColorMode } from './colorMode';
 
 const GEO_URL = '/countries-110m.json';
 const EXCLUDED_COUNTRY_IDS = new Set(['010', '260']);
@@ -11,11 +12,6 @@ const MAP_PADDING = {
   right: 24,
   bottom: 24,
   left: 24,
-};
-
-const COLORS = {
-  bg: '#2a2a2a',
-  yellow: '#f5c518',
 };
 
 const COUNTRY_GAP = 4;
@@ -91,7 +87,9 @@ export async function downloadFlatMapPng(
     throw new Error('Could not create export canvas.');
   }
 
-  ctx.fillStyle = COLORS.bg;
+  const palette = getColorPalette(getStoredColorMode());
+
+  ctx.fillStyle = palette.bgPrimary;
   ctx.fillRect(0, 0, EXPORT_WIDTH, EXPORT_HEIGHT);
 
   const projection = geoMercator()
@@ -109,17 +107,17 @@ export async function downloadFlatMapPng(
     const id = String(country.id);
     ctx.beginPath();
     path(country);
-    ctx.strokeStyle = COLORS.bg;
+    ctx.strokeStyle = palette.bgPrimary;
     ctx.lineWidth = COUNTRY_GAP;
     ctx.lineJoin = 'round';
     ctx.stroke();
-    ctx.fillStyle = visited.has(id) ? COLORS.yellow : COLORS.bg;
+    ctx.fillStyle = visited.has(id) ? palette.yellow : palette.bgPrimary;
     ctx.fill();
   }
 
   ctx.beginPath();
   path(borders);
-  ctx.strokeStyle = COLORS.yellow;
+  ctx.strokeStyle = palette.yellowMap;
   ctx.lineWidth = BORDER_WIDTH;
   ctx.lineJoin = 'round';
   ctx.lineCap = 'round';

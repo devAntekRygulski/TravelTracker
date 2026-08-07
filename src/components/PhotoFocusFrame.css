@@ -22,7 +22,7 @@
   padding: var(--photo-focus-panel-gap);
   border: 1px solid var(--yellow-bright, #f5c518);
   border-radius: 1.5rem;
-  background-color: #1a1a1a;
+  background-color: var(--bg-dark);
   pointer-events: auto;
   overflow: hidden;
 }
@@ -43,7 +43,7 @@
   align-items: center;
   margin: 0;
   max-width: 100%;
-  color: #9a9a9a;
+  color: var(--text-muted);
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: 1.35rem;
   font-weight: 700;
@@ -81,7 +81,7 @@
   border: none;
   border-radius: 0.35rem;
   background: transparent;
-  color: #9a9a9a;
+  color: var(--text-muted);
   cursor: pointer;
 }
 
@@ -115,10 +115,10 @@
   align-items: center;
   justify-content: center;
   padding: 0.55rem 1.15rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
   background-color: rgba(26, 26, 26, 0.92);
-  color: #c8c8c8;
+  color: var(--text-primary);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.01em;
@@ -278,7 +278,7 @@
   min-width: 0;
   border-radius: 0.55rem;
   overflow: hidden;
-  background: #1a1a1a;
+  background: var(--bg-dark);
   border: 1px solid #3a3a3a;
 }
 
@@ -372,8 +372,8 @@
 
 .photo-focus-frame__upload-computer .photo-focus-frame__action {
   min-width: 11.5rem;
-  border-color: #4a4a4a;
-  color: #c8c8c8;
+  border-color: var(--border);
+  color: var(--text-primary);
 }
 
 .photo-focus-frame__upload-label {
@@ -401,7 +401,7 @@
 
 .photo-focus-frame__upload-divider-text {
   flex-shrink: 0;
-  color: #9a9a9a;
+  color: var(--text-muted);
   font-family: 'Outfit', system-ui, sans-serif;
   font-size: 0.78rem;
   font-weight: 600;
@@ -412,10 +412,10 @@
 .photo-focus-frame__cancel-add {
   margin-top: 1rem;
   padding: 0.4rem 1rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
   background: transparent;
-  color: #c8c8c8;
+  color: var(--text-primary);
   font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
@@ -444,10 +444,10 @@
   z-index: 2;
   margin: 0;
   padding: 0.5rem 1.05rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
   background-color: rgba(26, 26, 26, 0.92);
-  color: #c8c8c8;
+  color: var(--text-primary);
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.01em;

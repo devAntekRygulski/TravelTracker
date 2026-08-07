@@ -22,7 +22,7 @@
   border: none;
   border-radius: 0;
   background: transparent;
-  color: #9a9a9a;
+  color: var(--text-muted);
   cursor: pointer;
   transition:
     color 0.2s ease,
@@ -36,7 +36,7 @@
 
 .map-user-menu__trigger:hover,
 .map-user-menu__trigger:focus-visible {
-  color: #c8c8c8;
+  color: var(--text-primary);
 }
 
 .map-user-menu__panel {
@@ -46,9 +46,9 @@
   width: var(--map-user-menu-trigger);
   height: var(--map-user-menu-trigger);
   overflow: hidden;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 1rem;
-  background-color: rgba(26, 26, 26, 0.94);
+  background-color: var(--panel-bg-strong);
   backdrop-filter: blur(8px);
   opacity: 0;
   pointer-events: none;
@@ -75,9 +75,9 @@
 .map-user-menu__button {
   width: 100%;
   padding: 0.8rem 1rem;
-  border: 1px solid #4a4a4a;
+  border: 1px solid var(--border);
   border-radius: 9999px;
-  background-color: rgba(26, 26, 26, 0.88);
+  background-color: var(--panel-bg);
   color: var(--text-primary);
   font-size: 0.9rem;
   font-weight: 600;

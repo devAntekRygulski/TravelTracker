@@ -55,10 +55,12 @@ const MAP_ROTATION: [number, number] = [-10, 0];
 
 const EXCLUDED_COUNTRY_IDS = new Set(['010', '260']);
 
+/** CSS vars so land/ocean follow dark/light mode without remounting. */
 const COLORS = {
-  bg: '#2a2a2a',
-  hover: '#3d3d3d',
-  yellow: '#f5c518',
+  bg: 'var(--bg-primary)',
+  hover: 'var(--bg-hover)',
+  yellow: 'var(--yellow-bright)',
+  mapStroke: 'var(--yellow-map)',
 };
 
 const COUNTRY_GAP = 4;
@@ -268,7 +270,7 @@ function countryFillStyle(visited: boolean, hovered = false) {
 function countryBorderStyle(strokeWidth = BORDER_WIDTH) {
   return {
     fill: 'none',
-    stroke: COLORS.yellow,
+    stroke: COLORS.mapStroke,
     strokeWidth,
     strokeLinejoin: 'round' as const,
     vectorEffect: 'non-scaling-stroke' as const,
@@ -297,7 +299,7 @@ const REGION_VISITED_STYLE = {
 
 const REGION_BORDER_STYLE = {
   fill: 'none',
-  stroke: COLORS.yellow,
+  stroke: COLORS.mapStroke,
   strokeWidth: REGION_BORDER_WIDTH,
   strokeOpacity: REGION_BORDER_OPACITY,
   strokeLinejoin: 'round' as const,
@@ -316,7 +318,7 @@ function regionalBorderOpacity(zoom: number): number {
 
 const CITY_OUTLINE_STYLE = {
   fill: 'none',
-  stroke: COLORS.yellow,
+  stroke: COLORS.mapStroke,
   strokeWidth: 0.28,
   strokeOpacity: 0.55,
   strokeDasharray: '3 2',

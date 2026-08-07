@@ -25,6 +25,7 @@ import {
   getTerritoryById,
   type CountryTerritory,
 } from '../lib/countryTerritories';
+import { useTheme } from '../context/ThemeContext';
 import { useCountryHasPhotos } from '../hooks/useCountryHasPhotos';
 import { MapHoverTooltip } from './MapHoverTooltip';
 import { MapCountryActionBox } from './MapCountryActionBox';
@@ -35,13 +36,6 @@ import './WorldGlobe.css';
 const GEO_URL = '/countries-110m.json';
 // Keep French Southern Territories off the globe; Antarctica is shown in globe mode.
 const EXCLUDED_COUNTRY_IDS = new Set(['260']);
-
-const COLORS = {
-  bg: '#2a2a2a',
-  hover: '#3d3d3d',
-  yellow: '#f5c518',
-  sphereStroke: '#4a4a4a',
-};
 
 const COUNTRY_GAP = 4;
 // Match WorldMap countryBorderStyle (non-scaling stroke width 0.3, #f5c518).
@@ -284,6 +278,14 @@ export function WorldGlobe({
   onPhotoFocusChange,
   onLightboxChange,
 }: WorldGlobeProps) {
+  const { palette } = useTheme();
+  const colorsRef = useRef({
+    bg: palette.bgPrimary,
+    hover: palette.bgHover,
+    yellow: palette.yellow,
+    mapStroke: palette.yellowMap,
+    sphereStroke: palette.border,
+  });
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const onToggleRef = useRef(onToggle);
@@ -375,6 +377,17 @@ export function WorldGlobe({
   useEffect(() => {
     photoFocusRef.current = photoFocus;
   }, [photoFocus]);
+
+  useEffect(() => {
+    colorsRef.current = {
+      bg: palette.bgPrimary,
+      hover: palette.bgHover,
+      yellow: palette.yellow,
+      mapStroke: palette.yellowMap,
+      sphereStroke: palette.border,
+    };
+    schedulePaintRef.current();
+  }, [palette]);
 
   useEffect(() => {
     onToggleRef.current = onToggle;
@@ -473,7 +486,7 @@ export function WorldGlobe({
 
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = COLORS.bg;
+    ctx.fillStyle = colorsRef.current.bg;
     ctx.fillRect(0, 0, width, height);
 
     const projection = createProjection(
@@ -494,11 +507,11 @@ export function WorldGlobe({
 
     ctx.beginPath();
     path({ type: 'Sphere' });
-    ctx.fillStyle = COLORS.bg;
+    ctx.fillStyle = colorsRef.current.bg;
     ctx.fill();
     ctx.globalAlpha = othersAlpha;
     ctx.lineWidth = 1.25;
-    ctx.strokeStyle = COLORS.sphereStroke;
+    ctx.strokeStyle = colorsRef.current.sphereStroke;
     ctx.stroke();
     ctx.globalAlpha = 1;
 
@@ -531,11 +544,11 @@ export function WorldGlobe({
           ctx.globalAlpha = othersAlpha;
           ctx.beginPath();
           path(remote);
-          ctx.strokeStyle = COLORS.bg;
+          ctx.strokeStyle = colorsRef.current.bg;
           ctx.lineWidth = COUNTRY_GAP;
           ctx.lineJoin = 'round';
           ctx.stroke();
-          ctx.fillStyle = visited ? COLORS.yellow : COLORS.bg;
+          ctx.fillStyle = visited ? colorsRef.current.yellow : colorsRef.current.bg;
           ctx.fill();
         }
         continue;
@@ -552,11 +565,11 @@ export function WorldGlobe({
       ctx.globalAlpha = othersAlpha;
       ctx.beginPath();
       path(country);
-      ctx.strokeStyle = COLORS.bg;
+      ctx.strokeStyle = colorsRef.current.bg;
       ctx.lineWidth = COUNTRY_GAP;
       ctx.lineJoin = 'round';
       ctx.stroke();
-      ctx.fillStyle = visited ? COLORS.yellow : COLORS.bg;
+      ctx.fillStyle = visited ? colorsRef.current.yellow : colorsRef.current.bg;
       ctx.fill();
     }
 
@@ -564,7 +577,7 @@ export function WorldGlobe({
       ctx.beginPath();
       path(bordersRef.current as GeoPermissibleObjects);
       ctx.globalAlpha = othersAlpha;
-      ctx.strokeStyle = COLORS.yellow;
+      ctx.strokeStyle = colorsRef.current.mapStroke;
       ctx.lineWidth = BORDER_WIDTH;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -578,15 +591,15 @@ export function WorldGlobe({
       ctx.globalAlpha = othersAlpha;
       ctx.beginPath();
       path(highlightedCountry);
-      ctx.strokeStyle = COLORS.bg;
+      ctx.strokeStyle = colorsRef.current.bg;
       ctx.lineWidth = COUNTRY_GAP;
       ctx.lineJoin = 'round';
       ctx.stroke();
-      ctx.fillStyle = visited ? COLORS.yellow : COLORS.hover;
+      ctx.fillStyle = visited ? colorsRef.current.yellow : colorsRef.current.hover;
       ctx.fill();
       ctx.beginPath();
       path(highlightedCountry);
-      ctx.strokeStyle = COLORS.yellow;
+      ctx.strokeStyle = colorsRef.current.mapStroke;
       ctx.lineWidth = BORDER_WIDTH;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -597,7 +610,7 @@ export function WorldGlobe({
       ctx.globalAlpha = 1;
       ctx.beginPath();
       path(focusTerritory);
-      ctx.strokeStyle = COLORS.bg;
+      ctx.strokeStyle = colorsRef.current.bg;
       ctx.lineWidth = COUNTRY_GAP;
       ctx.lineJoin = 'round';
       ctx.stroke();
@@ -605,7 +618,7 @@ export function WorldGlobe({
       ctx.fill();
       ctx.beginPath();
       path(focusTerritory);
-      ctx.strokeStyle = COLORS.yellow;
+      ctx.strokeStyle = colorsRef.current.mapStroke;
       ctx.lineWidth = BORDER_WIDTH;
       ctx.lineJoin = 'round';
       ctx.lineCap = 'round';
@@ -1160,7 +1173,7 @@ export function WorldGlobe({
     }
 
     const startedAt = performance.now();
-    const startFill = isVisited(countryId) ? COLORS.yellow : COLORS.hover;
+    const startFill = isVisited(countryId) ? colorsRef.current.yellow : colorsRef.current.hover;
     const base = {
       countryId,
       territoryId: mainland.id,

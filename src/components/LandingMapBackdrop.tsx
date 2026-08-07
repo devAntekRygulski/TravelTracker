@@ -3,17 +3,13 @@ import { geoMercator, geoPath } from 'd3-geo';
 import { feature, mesh } from 'topojson-client';
 import type { FeatureCollection, Geometry, MultiLineString } from 'geojson';
 import type { Topology } from 'topojson-specification';
+import { useTheme } from '../context/ThemeContext';
 import { LANDING_MAP_HIGHLIGHT_IDS } from '../data/landingMapHighlights';
 import './LandingMapBackdrop.css';
 
 const GEO_URL = '/countries-110m.json';
 const EXCLUDED_COUNTRY_IDS = new Set(['010', '260']);
 const HIGHLIGHT_IDS = new Set<string>(LANDING_MAP_HIGHLIGHT_IDS);
-
-const COLORS = {
-  bg: '#2a2a2a',
-  yellow: '#f5c518',
-};
 
 const COUNTRY_GAP = 3.5;
 const BORDER_WIDTH = 0.7;
@@ -84,6 +80,12 @@ function filterTopology(topology: Topology): Topology {
 }
 
 export function LandingMapBackdrop() {
+  const { palette } = useTheme();
+  const colorsRef = useRef({
+    bg: palette.bgPrimary,
+    yellow: palette.yellow,
+    mapStroke: palette.yellowMap,
+  });
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sizeRef = useRef({ width: 0, height: 0 });
   const countriesRef = useRef<CountryFeature[]>([]);
@@ -93,6 +95,14 @@ export function LandingMapBackdrop() {
   const latPhaseRef = useRef(0);
   const rafRef = useRef<number | null>(null);
   const lastTsRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    colorsRef.current = {
+      bg: palette.bgPrimary,
+      yellow: palette.yellow,
+      mapStroke: palette.yellowMap,
+    };
+  }, [palette]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -121,10 +131,11 @@ export function LandingMapBackdrop() {
 
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
+      const colors = colorsRef.current;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = COLORS.bg;
+      ctx.fillStyle = colors.bg;
       ctx.fillRect(0, 0, width, height);
 
       const mobile = isMobileBackdrop();
@@ -146,18 +157,18 @@ export function LandingMapBackdrop() {
         const id = String(country.id);
         ctx.beginPath();
         path(country);
-        ctx.strokeStyle = COLORS.bg;
+        ctx.strokeStyle = colors.bg;
         ctx.lineWidth = COUNTRY_GAP;
         ctx.lineJoin = 'round';
         ctx.stroke();
-        ctx.fillStyle = HIGHLIGHT_IDS.has(id) ? COLORS.yellow : COLORS.bg;
+        ctx.fillStyle = HIGHLIGHT_IDS.has(id) ? colors.yellow : colors.bg;
         ctx.fill();
       }
 
       if (bordersRef.current) {
         ctx.beginPath();
         path(bordersRef.current);
-        ctx.strokeStyle = COLORS.yellow;
+        ctx.strokeStyle = colors.mapStroke;
         ctx.lineWidth = BORDER_WIDTH;
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';

@@ -5,6 +5,7 @@ import { useCountryPhotos } from '../hooks/useCountryPhotos';
 import { useGuestPendingClaim } from '../hooks/useGuestPendingClaim';
 import { pickImagesFromGoogleDrive } from '../lib/googleDrivePicker';
 import { pickImagesFromGooglePhotos } from '../lib/googlePhotosPicker';
+import { useTheme } from '../context/ThemeContext';
 import { easeInOutCubic } from '../lib/photoFocus';
 import { PhotoLightbox } from './PhotoLightbox';
 import { PhotoUploadQrPanel } from './PhotoUploadQrPanel';
@@ -17,8 +18,6 @@ import './PhotoFocusFrame.css';
 
 const CLOSE_CSS_SIZE = 18;
 const CLOSE_CSS_LINE = 2;
-const CLOSE_COLOR = '#9a9a9a';
-const CLOSE_COLOR_HOVER = '#ffffff';
 
 type UploadSource = 'local' | 'drive' | 'photos';
 
@@ -75,6 +74,7 @@ export function PhotoFocusFrame({
   onClose,
   onLightboxChange,
 }: PhotoFocusFrameProps) {
+  const { palette } = useTheme();
   const opacity = easeInOutCubic(progress);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -125,8 +125,10 @@ export function PhotoFocusFrame({
     const canvas = canvasRef.current;
     if (!button || !canvas) return;
 
-    const paintDefault = () => paintCloseX(canvas, CLOSE_COLOR);
-    const paintHover = () => paintCloseX(canvas, CLOSE_COLOR_HOVER);
+    const closeColor = palette.textMuted;
+    const closeHover = palette.textPrimary;
+    const paintDefault = () => paintCloseX(canvas, closeColor);
+    const paintHover = () => paintCloseX(canvas, closeHover);
 
     paintDefault();
 
@@ -156,7 +158,7 @@ export function PhotoFocusFrame({
       button.removeEventListener('blur', onLeave);
       window.removeEventListener('resize', paintDefault);
     };
-  }, []);
+  }, [palette.textMuted, palette.textPrimary]);
 
   const importFiles = async (files: File[], source: UploadSource) => {
     if (files.length === 0) return;

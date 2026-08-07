@@ -45,7 +45,7 @@
   border: none;
   border-radius: 0.35rem;
   background: transparent;
-  color: #9a9a9a;
+  color: var(--text-muted);
   pointer-events: auto;
   cursor: pointer;
   position: relative;

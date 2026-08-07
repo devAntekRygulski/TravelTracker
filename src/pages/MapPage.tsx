@@ -123,6 +123,7 @@ export function MapPage() {
                 onExport={handleExport}
               />
               <MapSettingsMenu
+                placement="header"
                 regionalViewLocked={regionalViewLocked}
                 onRegionalViewChange={setRegionalViewLocked}
                 projectionMode={projectionMode}

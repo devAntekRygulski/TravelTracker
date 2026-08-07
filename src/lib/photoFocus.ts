@@ -215,7 +215,26 @@ export function flatPhotoFocusTransformString(
   return `translate(${dx},${dy}) translate(${focus.cx},${focus.cy}) scale(${scale}) translate(${-focus.cx},${-focus.cy})`;
 }
 
-/** Unvisited / unfocused country fill on the map. */
+/** Resolve `var(--token)` or pass through hex for canvas / lerp. */
+export function resolveThemeColor(value: string, fallback = '#2a2a2a'): string {
+  if (typeof document === 'undefined') return fallback;
+  const trimmed = value.trim();
+  if (!trimmed.startsWith('var(')) return trimmed || fallback;
+  const match = trimmed.match(/var\(\s*(--[\w-]+)\s*\)/);
+  if (!match) return fallback;
+  return (
+    getComputedStyle(document.documentElement)
+      .getPropertyValue(match[1])
+      .trim() || fallback
+  );
+}
+
+/** Unvisited / unfocused country fill on the map (follows active theme). */
+export function getPhotoFocusBaseFill(): string {
+  return resolveThemeColor('var(--bg-primary)', '#2a2a2a');
+}
+
+/** @deprecated Prefer getPhotoFocusBaseFill() for theme-aware fills. */
 export const PHOTO_FOCUS_BASE_FILL = '#2a2a2a';
 
 function parseHexColor(hex: string): { r: number; g: number; b: number } {
@@ -245,11 +264,11 @@ export function lerpHexColor(from: string, to: string, t: number): string {
   return `rgb(${r}, ${g}, ${bl})`;
 }
 
-/** Focused-country fill: start color → base grey over focus progress. */
+/** Focused-country fill: start color → theme base over focus progress. */
 export function photoFocusFillColor(startFill: string, progress: number): string {
   return lerpHexColor(
-    startFill,
-    PHOTO_FOCUS_BASE_FILL,
+    resolveThemeColor(startFill, '#3d3d3d'),
+    getPhotoFocusBaseFill(),
     easeInOutCubic(progress),
   );
 }

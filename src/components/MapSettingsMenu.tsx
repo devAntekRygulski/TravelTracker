@@ -1,8 +1,10 @@
 import { useEffect, useId, useRef, useState } from 'react';
+import { useTheme } from '../context/ThemeContext';
 import {
   MapProjectionToggle,
   type MapProjectionMode,
 } from './MapProjectionToggle';
+import { MapThemeToggle } from './MapThemeToggle';
 import { MapViewToggle } from './MapViewToggle';
 import './MapSettingsMenu.css';
 
@@ -12,6 +14,8 @@ interface MapSettingsMenuProps {
   projectionMode: MapProjectionMode;
   onProjectionModeChange: (mode: MapProjectionMode) => void;
   hidden?: boolean;
+  /** header = phone top-left; oval = desktop left of stats counters */
+  placement?: 'header' | 'oval';
 }
 
 function GearIcon() {
@@ -19,8 +23,8 @@ function GearIcon() {
     <svg
       className="map-settings-menu__icon"
       viewBox="0 0 24 24"
-      width={20}
-      height={20}
+      width={18}
+      height={18}
       aria-hidden="true"
       focusable="false"
     >
@@ -32,14 +36,16 @@ function GearIcon() {
   );
 }
 
-/** Phone-only map settings — gear icon expands into view / projection toggles. */
+/** Gear icon expands into Country/Regional + Flat/Globe toggles. */
 export function MapSettingsMenu({
   regionalViewLocked,
   onRegionalViewChange,
   projectionMode,
   onProjectionModeChange,
   hidden = false,
+  placement = 'header',
 }: MapSettingsMenuProps) {
+  const { colorMode, setColorMode } = useTheme();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const panelId = useId();
@@ -75,6 +81,7 @@ export function MapSettingsMenu({
       ref={rootRef}
       className={[
         'map-settings-menu',
+        `map-settings-menu--${placement}`,
         open ? 'map-settings-menu--open' : '',
         hidden ? 'map-settings-menu--hidden' : '',
       ]
@@ -101,15 +108,16 @@ export function MapSettingsMenu({
         aria-hidden={!open}
       >
         <div className="map-settings-menu__panel-inner">
+          <MapProjectionToggle
+            mode={projectionMode}
+            onChange={onProjectionModeChange}
+          />
           <MapViewToggle
             regionalViewLocked={regionalViewLocked}
             onChange={onRegionalViewChange}
             regionalDisabled={projectionMode === 'globe'}
           />
-          <MapProjectionToggle
-            mode={projectionMode}
-            onChange={onProjectionModeChange}
-          />
+          <MapThemeToggle mode={colorMode} onChange={setColorMode} />
         </div>
       </div>
     </div>

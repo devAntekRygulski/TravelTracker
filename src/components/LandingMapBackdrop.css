@@ -15,5 +15,5 @@
 .landing-map-backdrop__veil {
   position: absolute;
   inset: 0;
-  background-color: rgba(42, 42, 42, 0.58);
+  background-color: var(--landing-veil);
 }
