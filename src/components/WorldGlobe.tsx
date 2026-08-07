@@ -44,7 +44,6 @@ const DRAG_CLICK_THRESHOLD_PX = 5;
 /** Dismiss the country action box once the country drifts this far from it. */
 const SELECTION_DISMISS_DISTANCE_PX = 110;
 const ROTATION_SENSITIVITY = 0.42;
-const ROTATION_SENSITIVITY_PHONE = 0.72;
 const PHONE_QUERY = '(max-width: 640px)';
 const MAX_LATITUDE = 89;
 const INERTIA_FRICTION = 0.92;
@@ -204,11 +203,22 @@ function rotationFacingFeature(
   return [-lon, clampLatitude(-lat), 0];
 }
 
-function rotationSensitivity(): number {
-  return typeof window !== 'undefined' &&
-    window.matchMedia(PHONE_QUERY).matches
-    ? ROTATION_SENSITIVITY_PHONE
-    : ROTATION_SENSITIVITY;
+/**
+ * Google Earth–style angular sensitivity: dragging one globe radius rotates
+ * ~1 radian so the surface tracks under the finger at the current zoom.
+ */
+function googleEarthDegreesPerPixel(
+  width: number,
+  height: number,
+  zoom: number,
+): number {
+  const availableHeight = Math.max(
+    0,
+    height - GLOBE_TOP_PADDING - GLOBE_BOTTOM_PADDING,
+  );
+  const size = Math.min(width, availableHeight);
+  const radius = Math.max(1, size * 0.42 * Math.max(zoom, MIN_ZOOM));
+  return 180 / Math.PI / radius;
 }
 
 function rotationFromDrag(
@@ -218,8 +228,14 @@ function rotationFromDrag(
   clientX: number,
   clientY: number,
   zoom: number,
+  width: number,
+  height: number,
 ): [number, number, number] {
-  const sensitivity = rotationSensitivity() / Math.max(zoom, MIN_ZOOM);
+  const isPhone =
+    typeof window !== 'undefined' && window.matchMedia(PHONE_QUERY).matches;
+  const sensitivity = isPhone
+    ? googleEarthDegreesPerPixel(width, height, zoom)
+    : ROTATION_SENSITIVITY / Math.max(zoom, MIN_ZOOM);
   const dx = clientX - startX;
   const dy = clientY - startY;
   // Drag direction matches spin direction (not grab-the-surface).
@@ -977,6 +993,7 @@ export function WorldGlobe({
 
       setHoverTooltip({ label: null, x, y });
 
+      const { width, height } = sizeRef.current;
       const next = rotationFromDrag(
         drag.startRotation,
         drag.startX,
@@ -984,6 +1001,8 @@ export function WorldGlobe({
         event.clientX,
         event.clientY,
         drag.startZoom,
+        width,
+        height,
       );
 
       const now = performance.now();

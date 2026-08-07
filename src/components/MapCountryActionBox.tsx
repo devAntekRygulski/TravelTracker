@@ -33,6 +33,8 @@ export function MapCountryActionBox({
     x: x + ACTION_BOX_OFFSET_X,
     y: y + ACTION_BOX_OFFSET_Y,
   });
+  /** True when the box sits left of the tap (near the right screen edge). */
+  const [flipped, setFlipped] = useState(false);
 
   const photosLabel = !photosReady
     ? 'Photos'
@@ -52,10 +54,12 @@ export function MapCountryActionBox({
 
     let nextX = x + ACTION_BOX_OFFSET_X;
     let nextY = y + ACTION_BOX_OFFSET_Y;
+    let nextFlipped = false;
 
     // Prefer right of the tap; if it would clip, place to the left instead.
     if (nextX + boxW > parentW - VIEWPORT_MARGIN) {
       nextX = x - boxW - ACTION_BOX_OFFSET_X;
+      nextFlipped = true;
     }
 
     nextX = Math.max(
@@ -68,12 +72,17 @@ export function MapCountryActionBox({
     );
 
     setPos({ x: nextX, y: nextY });
+    setFlipped(nextFlipped);
   }, [x, y, label, isMarked, hasPhotos, photosReady]);
 
   return (
     <div
       ref={rootRef}
-      className="map-country-action"
+      className={
+        flipped
+          ? 'map-country-action map-country-action--flipped'
+          : 'map-country-action'
+      }
       style={{
         transform: `translate(${pos.x}px, ${pos.y}px)`,
       }}

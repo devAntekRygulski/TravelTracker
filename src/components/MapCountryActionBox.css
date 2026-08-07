@@ -27,6 +27,12 @@
   background: var(--yellow-bright);
 }
 
+.map-country-action--flipped .map-country-action__accent {
+  left: auto;
+  right: 0;
+  border-radius: 2px 0 0 2px;
+}
+
 .map-country-action__name {
   margin: 0;
   padding-left: 0.4rem;
