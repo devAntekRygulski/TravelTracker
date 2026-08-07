@@ -89,6 +89,19 @@ export function PhotoFocusFrame({
   const [addingMore, setAddingMore] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [trackedCountryId, setTrackedCountryId] = useState(countryId);
+  const [isPhoneLayout, setIsPhoneLayout] = useState(() =>
+    typeof window !== 'undefined'
+      ? window.matchMedia('(max-width: 640px)').matches
+      : false,
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 640px)');
+    const sync = () => setIsPhoneLayout(media.matches);
+    sync();
+    media.addEventListener('change', sync);
+    return () => media.removeEventListener('change', sync);
+  }, []);
 
   if (trackedCountryId !== countryId) {
     setTrackedCountryId(countryId);
@@ -432,18 +445,27 @@ export function PhotoFocusFrame({
                   </button>
                 </div>
 
-                <div className="photo-focus-frame__upload-divider" role="separator">
-                  <span className="photo-focus-frame__upload-divider-line" />
-                  <span className="photo-focus-frame__upload-divider-text">or</span>
-                  <span className="photo-focus-frame__upload-divider-line" />
-                </div>
+                {!isPhoneLayout && (
+                  <>
+                    <div
+                      className="photo-focus-frame__upload-divider"
+                      role="separator"
+                    >
+                      <span className="photo-focus-frame__upload-divider-line" />
+                      <span className="photo-focus-frame__upload-divider-text">
+                        or
+                      </span>
+                      <span className="photo-focus-frame__upload-divider-line" />
+                    </div>
 
-                <PhotoUploadQrPanel
-                  key={`${countryId}-upload`}
-                  countryId={countryId}
-                  countryName={countryName}
-                  onPhotosChanged={handlePhonePhotosChanged}
-                />
+                    <PhotoUploadQrPanel
+                      key={`${countryId}-upload`}
+                      countryId={countryId}
+                      countryName={countryName}
+                      onPhotosChanged={handlePhonePhotosChanged}
+                    />
+                  </>
+                )}
               </div>
 
               {(actionError ?? error) && (

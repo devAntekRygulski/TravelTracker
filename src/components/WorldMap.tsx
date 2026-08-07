@@ -1055,6 +1055,7 @@ export function WorldMap({
         dimensions.height,
         mapCenter,
         mapZoomRef.current,
+        { reserveTerritoryLinks: territories.length > 1 },
       );
       if (!transform) return;
 
@@ -1131,6 +1132,7 @@ export function WorldMap({
         dimensions.height,
         mapCenter,
         mapZoomRef.current,
+        { reserveTerritoryLinks: current.territories.length > 1 },
       );
       if (!transform) return;
 

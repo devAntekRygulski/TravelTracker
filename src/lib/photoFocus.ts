@@ -22,8 +22,30 @@ export function lerpLongitude(a: number, b: number, t: number): number {
   return a + delta * t;
 }
 
+/** Matches PhotoFocusFrame / map UI phone breakpoint. */
+export const PHOTO_FOCUS_PHONE_MAX_PX = 640;
+
 /** Keep a little air inside the safe rect so edges never kiss UI. */
 const FOCUS_FIT = 0.82;
+/** Phone: fill most of the band above the sheet (both axes). */
+const FOCUS_FIT_PHONE_X = 0.92;
+const FOCUS_FIT_PHONE_Y = 0.9;
+
+export function getPhotoFocusFitAxes(viewportWidth: number): {
+  x: number;
+  y: number;
+} {
+  if (viewportWidth <= PHOTO_FOCUS_PHONE_MAX_PX) {
+    return { x: FOCUS_FIT_PHONE_X, y: FOCUS_FIT_PHONE_Y };
+  }
+  return { x: FOCUS_FIT, y: FOCUS_FIT };
+}
+
+/** Uniform fit factor (min axis) — useful where a single scale is needed. */
+export function getPhotoFocusFit(viewportWidth: number): number {
+  const axes = getPhotoFocusFitAxes(viewportWidth);
+  return Math.min(axes.x, axes.y);
+}
 
 export type PhotoFocusSafeRect = {
   left: number;
@@ -34,14 +56,73 @@ export type PhotoFocusSafeRect = {
   centerY: number;
 };
 
+/** Height of the phone strip reserved for “Go to …” territory links. */
+export const PHOTO_FOCUS_PHONE_TERRITORY_GAP = 2.75 * 16;
+
+export type PhotoFocusSafeRectOptions = {
+  /** Reserve a bottom strip so the outline never covers territory links. */
+  reserveTerritoryLinks?: boolean;
+};
+
 /**
- * Left-half region for the focused country. Cleared of the header;
- * bottom stays open for territory links (stats oval is hidden in this mode).
+ * Phone bottom-sheet panel metrics — keep in sync with
+ * `.photo-focus-frame__panel` rules in PhotoFocusFrame.css.
+ */
+export function getPhotoFocusPhonePanelLayout(
+  viewportHeight: number,
+  options: PhotoFocusSafeRectOptions = {},
+): {
+  sideInset: number;
+  bottom: number;
+  height: number;
+  gapAbove: number;
+} {
+  const rem = 16;
+  return {
+    sideInset: 1.25 * rem,
+    bottom: 1.5 * rem,
+    // ~55% of the screen — keep in sync with PhotoFocusFrame.css
+    height: viewportHeight * 0.55,
+    gapAbove: options.reserveTerritoryLinks
+      ? PHOTO_FOCUS_PHONE_TERRITORY_GAP
+      : 0,
+  };
+}
+
+/**
+ * Region for the focused country outline.
+ * Desktop: left half of the viewport.
+ * Phone: band above the bottom-sheet upload panel.
  */
 export function getPhotoFocusSafeRect(
   viewportWidth: number,
   viewportHeight: number,
+  options: PhotoFocusSafeRectOptions = {},
 ): PhotoFocusSafeRect {
+  if (viewportWidth <= PHOTO_FOCUS_PHONE_MAX_PX) {
+    const panel = getPhotoFocusPhonePanelLayout(viewportHeight, options);
+    // Gear/logo header clearance (same band as before the tall-country tweak).
+    const topUi = 8 + 40 + 12;
+    const left = panel.sideInset;
+    const top = topUi;
+    const right = viewportWidth - panel.sideInset;
+    const bottom =
+      viewportHeight - panel.bottom - panel.height - panel.gapAbove;
+
+    const width = Math.max(0, right - left);
+    const height = Math.max(0, bottom - top);
+
+    return {
+      left,
+      top,
+      width,
+      height,
+      centerX: left + width / 2,
+      // Center in the country band (above territory strip when reserved).
+      centerY: top + height / 2,
+    };
+  }
+
   // Burger + header clearance, then extra top inset so framing sits lower.
   const topUi = 8 + 32 + 72 + 48;
   const bottomUi = 72;
@@ -88,6 +169,7 @@ export function computeFlatPhotoFocusTransform(
   height: number,
   mapCenter: [number, number],
   mapZoom: number,
+  options: PhotoFocusSafeRectOptions = {},
 ): PhotoFocusTransform | null {
   const path = geoPath(projection);
   const [[x0, y0], [x1, y1]] = path.bounds(geo);
@@ -105,13 +187,16 @@ export function computeFlatPhotoFocusTransform(
   const [cpx, cpy] = centerProj;
   const zoom = Math.max(mapZoom, 0.001);
 
-  const safe = getPhotoFocusSafeRect(width, height);
+  const safe = getPhotoFocusSafeRect(width, height, options);
   if (!(safe.width > 0) || !(safe.height > 0)) return null;
 
   const screenW = pw * zoom;
   const screenH = ph * zoom;
-  const scale =
-    Math.min(safe.width / screenW, safe.height / screenH) * FOCUS_FIT;
+  const fit = getPhotoFocusFitAxes(width);
+  const scale = Math.min(
+    (safe.width * fit.x) / screenW,
+    (safe.height * fit.y) / screenH,
+  );
 
   const dx = (safe.centerX - width / 2) / zoom - (pcx - cpx);
   const dy = (safe.centerY - height / 2) / zoom - (pcy - cpy);

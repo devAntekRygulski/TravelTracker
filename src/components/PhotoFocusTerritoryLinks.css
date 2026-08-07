@@ -43,10 +43,16 @@
 }
 
 @media (max-width: 640px) {
+  /*
+   * Sit in the reserved strip above the sheet
+   * (PHOTO_FOCUS_PHONE_TERRITORY_GAP ≈ 2.75rem).
+   */
   .photo-focus-territories {
-    left: 0.75rem;
-    bottom: 1.5rem;
-    max-width: calc(100% - 1.5rem);
+    left: 1.25rem;
+    right: auto;
+    bottom: calc(1.5rem + 55vh + 0.55rem);
+    max-width: calc(100% - 2.5rem);
+    justify-content: flex-start;
   }
 
   .photo-focus-territories__link {

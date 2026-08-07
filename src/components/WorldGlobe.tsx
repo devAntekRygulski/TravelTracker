@@ -14,6 +14,7 @@ import {
   PHOTO_FOCUS_DURATION_MS,
   applyPhotoFocusFrameProgress,
   easeInOutCubic,
+  getPhotoFocusFitAxes,
   getPhotoFocusSafeRect,
   lerp,
   lerpLongitude,
@@ -161,10 +162,14 @@ function fitGlobeZoomForCountry(
   height: number,
   rotation: [number, number, number],
   translate: [number, number],
+  reserveTerritoryLinks = false,
 ): number {
-  const safe = getPhotoFocusSafeRect(width, height);
+  const safe = getPhotoFocusSafeRect(width, height, {
+    reserveTerritoryLinks,
+  });
   if (!(safe.width > 0) || !(safe.height > 0)) return INITIAL_ZOOM;
 
+  const fit = getPhotoFocusFitAxes(width);
   let lo = MIN_ZOOM;
   let hi = MAX_ZOOM;
   let best = INITIAL_ZOOM;
@@ -185,7 +190,7 @@ function fitGlobeZoomForCountry(
       hi = mid;
       continue;
     }
-    if (bw <= safe.width * 0.82 && bh <= safe.height * 0.82) {
+    if (bw <= safe.width * fit.x && bh <= safe.height * fit.y) {
       best = mid;
       lo = mid;
     } else {
@@ -1120,6 +1125,7 @@ export function WorldGlobe({
 
     const territories = getCountryTerritories(country);
     const mainland = territories[0];
+    const reserveTerritoryLinks = territories.length > 1;
 
     const startRotation: [number, number, number] = [
       rotationRef.current[0],
@@ -1135,7 +1141,9 @@ export function WorldGlobe({
       translate: translateRef.current,
     };
 
-    const safe = getPhotoFocusSafeRect(width, height);
+    const safe = getPhotoFocusSafeRect(width, height, {
+      reserveTerritoryLinks,
+    });
     const endRotation = rotationFacingFeature(mainland.feature);
     const endTranslate: [number, number] = [safe.centerX, safe.centerY];
     const endZoom = fitGlobeZoomForCountry(
@@ -1144,6 +1152,7 @@ export function WorldGlobe({
       height,
       endRotation,
       endTranslate,
+      reserveTerritoryLinks,
     );
 
     if (photoFocusRafRef.current !== null) {
@@ -1203,7 +1212,10 @@ export function WorldGlobe({
     const { width, height } = sizeRef.current;
     if (width <= 0 || height <= 0) return;
 
-    const safe = getPhotoFocusSafeRect(width, height);
+    const reserveTerritoryLinks = current.territories.length > 1;
+    const safe = getPhotoFocusSafeRect(width, height, {
+      reserveTerritoryLinks,
+    });
     const endRotation = rotationFacingFeature(territory.feature);
     const endTranslate: [number, number] = [safe.centerX, safe.centerY];
     const endZoom = fitGlobeZoomForCountry(
@@ -1212,6 +1224,7 @@ export function WorldGlobe({
       height,
       endRotation,
       endTranslate,
+      reserveTerritoryLinks,
     );
 
     rotationRef.current = endRotation;
