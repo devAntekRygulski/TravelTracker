@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { withColorModeQuery } from '../lib/colorMode';
 import { addGuestPhotos } from '../lib/guestPhotos';
 import './PhotoUploadOverlay.css';
 
@@ -42,6 +44,7 @@ export function PhotoUploadOverlay({
   onPhotosChanged,
 }: PhotoUploadOverlayProps) {
   const { token } = useAuth();
+  const { colorMode } = useTheme();
   const [session, setSession] = useState<SessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -80,17 +83,21 @@ export function PhotoUploadOverlay({
   useEffect(() => {
     if (!session || !qrCanvasRef.current) return;
 
-    QRCode.toCanvas(qrCanvasRef.current, session.uploadUrl, {
-      width: 148,
-      margin: 1,
-      color: {
-        dark: '#1a1a1a',
-        light: '#ffffff',
+    QRCode.toCanvas(
+      qrCanvasRef.current,
+      withColorModeQuery(session.uploadUrl, colorMode),
+      {
+        width: 148,
+        margin: 1,
+        color: {
+          dark: '#1a1a1a',
+          light: '#ffffff',
+        },
       },
-    }).catch(() => {
+    ).catch(() => {
       setError('Failed to render QR code');
     });
-  }, [session]);
+  }, [session, colorMode]);
 
   // Countdown tick.
   useEffect(() => {

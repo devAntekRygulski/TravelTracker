@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
+import { useTheme } from '../context/ThemeContext';
+import { isColorMode } from '../lib/colorMode';
 import { api, type UploadSessionInfo } from '../lib/api';
 import './UploadPage.css';
 
@@ -15,6 +17,8 @@ type Status =
 /** Phone-side page opened by scanning the upload QR code. */
 export function UploadPage() {
   const { token } = useParams<{ token: string }>();
+  const [searchParams] = useSearchParams();
+  const { setColorMode } = useTheme();
   const [status, setStatus] = useState<Status>(() =>
     token
       ? { kind: 'loading' }
@@ -22,6 +26,14 @@ export function UploadPage() {
   );
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Match the host site's theme carried in the QR link (?theme=light|dark).
+  useEffect(() => {
+    const theme = searchParams.get('theme');
+    if (isColorMode(theme)) {
+      setColorMode(theme);
+    }
+  }, [searchParams, setColorMode]);
 
   useEffect(() => {
     if (!token) {

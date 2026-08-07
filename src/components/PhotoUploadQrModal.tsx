@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { withColorModeQuery } from '../lib/colorMode';
 import { addGuestPhotos } from '../lib/guestPhotos';
 import './PhotoUploadQrModal.css';
 
@@ -37,6 +39,7 @@ export function PhotoUploadQrModal({
   onPhotosChanged,
 }: PhotoUploadQrModalProps) {
   const { token } = useAuth();
+  const { colorMode } = useTheme();
   const [session, setSession] = useState<SessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -80,17 +83,21 @@ export function PhotoUploadQrModal({
   useEffect(() => {
     if (!session || !canvasRef.current) return;
 
-    QRCode.toCanvas(canvasRef.current, session.uploadUrl, {
-      width: 220,
-      margin: 1,
-      color: {
-        dark: '#1a1a1a',
-        light: '#ffffff',
+    QRCode.toCanvas(
+      canvasRef.current,
+      withColorModeQuery(session.uploadUrl, colorMode),
+      {
+        width: 220,
+        margin: 1,
+        color: {
+          dark: '#1a1a1a',
+          light: '#ffffff',
+        },
       },
-    }).catch(() => {
+    ).catch(() => {
       setError('Failed to render QR code');
     });
-  }, [session]);
+  }, [session, colorMode]);
 
   // Tick the countdown while the modal is open.
   useEffect(() => {

@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
+import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
 import { api } from '../lib/api';
+import { withColorModeQuery } from '../lib/colorMode';
 import {
   rememberGuestUploadSession,
   restoreGuestUploadSession,
@@ -36,6 +38,7 @@ export function PhotoUploadQrPanel({
   onPhotosChanged,
 }: PhotoUploadQrPanelProps) {
   const { token, isGuest } = useAuth();
+  const { colorMode } = useTheme();
   const [session, setSession] = useState<SessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [now, setNow] = useState(() => Date.now());
@@ -102,17 +105,21 @@ export function PhotoUploadQrPanel({
   useEffect(() => {
     if (!session || !canvasRef.current) return;
 
-    QRCode.toCanvas(canvasRef.current, session.uploadUrl, {
-      width: 168,
-      margin: 1,
-      color: {
-        dark: '#1a1a1a',
-        light: '#ffffff',
+    QRCode.toCanvas(
+      canvasRef.current,
+      withColorModeQuery(session.uploadUrl, colorMode),
+      {
+        width: 168,
+        margin: 1,
+        color: {
+          dark: '#1a1a1a',
+          light: '#ffffff',
+        },
       },
-    }).catch(() => {
+    ).catch(() => {
       setError('Failed to render QR code');
     });
-  }, [session]);
+  }, [session, colorMode]);
 
   useEffect(() => {
     const tick = window.setInterval(() => setNow(Date.now()), 1000);

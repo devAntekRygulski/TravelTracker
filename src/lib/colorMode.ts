@@ -55,3 +55,15 @@ export function applyColorMode(mode: ColorMode): void {
 export function getColorPalette(mode: ColorMode): ColorPalette {
   return COLOR_PALETTES[mode];
 }
+
+/** Append the host site's color mode so the phone upload page can match. */
+export function withColorModeQuery(url: string, mode: ColorMode): string {
+  try {
+    const parsed = new URL(url, window.location.origin);
+    parsed.searchParams.set('theme', mode);
+    return parsed.toString();
+  } catch {
+    const joiner = url.includes('?') ? '&' : '?';
+    return `${url}${joiner}theme=${mode}`;
+  }
+}
