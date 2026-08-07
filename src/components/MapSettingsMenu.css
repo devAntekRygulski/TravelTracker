@@ -119,6 +119,9 @@
 }
 
 .map-settings-menu--open .map-settings-menu__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: var(--map-settings-menu-width);
   height: 10.1rem;
   opacity: 1;
@@ -129,6 +132,14 @@
   opacity: 1;
   transform: translateY(0);
   transition-delay: 0.05s;
+}
+
+/* Drop absolute bottom-pin so flex can center toggles evenly. */
+.map-settings-menu--oval.map-settings-menu--open .map-settings-menu__panel-inner {
+  position: relative;
+  right: auto;
+  bottom: auto;
+  align-self: flex-end;
 }
 
 /* Header gear is phone-only; oval gear is desktop-only */

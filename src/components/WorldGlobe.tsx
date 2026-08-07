@@ -43,7 +43,9 @@ const BORDER_WIDTH = 0.3;
 const DRAG_CLICK_THRESHOLD_PX = 5;
 /** Dismiss the country action box once the country drifts this far from it. */
 const SELECTION_DISMISS_DISTANCE_PX = 110;
-const ROTATION_SENSITIVITY = 0.2;
+const ROTATION_SENSITIVITY = 0.42;
+const ROTATION_SENSITIVITY_PHONE = 0.72;
+const PHONE_QUERY = '(max-width: 640px)';
 const MAX_LATITUDE = 89;
 const INERTIA_FRICTION = 0.92;
 const MIN_INERTIA_SPEED = 0.04;
@@ -202,6 +204,13 @@ function rotationFacingFeature(
   return [-lon, clampLatitude(-lat), 0];
 }
 
+function rotationSensitivity(): number {
+  return typeof window !== 'undefined' &&
+    window.matchMedia(PHONE_QUERY).matches
+    ? ROTATION_SENSITIVITY_PHONE
+    : ROTATION_SENSITIVITY;
+}
+
 function rotationFromDrag(
   startRotation: [number, number, number],
   startX: number,
@@ -210,7 +219,7 @@ function rotationFromDrag(
   clientY: number,
   zoom: number,
 ): [number, number, number] {
-  const sensitivity = ROTATION_SENSITIVITY / Math.max(zoom, MIN_ZOOM);
+  const sensitivity = rotationSensitivity() / Math.max(zoom, MIN_ZOOM);
   const dx = clientX - startX;
   const dy = clientY - startY;
   // Drag direction matches spin direction (not grab-the-surface).

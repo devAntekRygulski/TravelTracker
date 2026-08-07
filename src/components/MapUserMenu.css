@@ -102,6 +102,9 @@
 }
 
 .map-user-menu--open .map-user-menu__panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
   width: var(--map-user-menu-width);
   height: 12.25rem;
   opacity: 1;
@@ -116,6 +119,21 @@
 
 @media (max-width: 640px) {
   .map-user-menu {
-    --map-user-menu-width: min(18.5rem, calc(100vw - 1.5rem));
+    --map-user-menu-width: 10rem;
+  }
+
+  .map-user-menu__panel-inner {
+    gap: 0.5rem;
+    padding: 0.65rem;
+  }
+
+  .map-user-menu__button {
+    padding: 0.55rem 0.55rem;
+    font-size: 0.78rem;
+    text-align: center;
+  }
+
+  .map-user-menu--open .map-user-menu__panel {
+    height: 9.85rem;
   }
 }
