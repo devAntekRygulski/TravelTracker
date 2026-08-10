@@ -12,13 +12,16 @@ import type { Feature, FeatureCollection, Geometry, MultiLineString } from 'geoj
 import type { Topology } from 'topojson-specification';
 import {
   PHOTO_FOCUS_DURATION_MS,
+  PHOTO_FOCUS_PHONE_MAX_PX,
   applyPhotoFocusFrameProgress,
+  clearPhotoFocusPhonePanelHeight,
   easeInOutCubic,
   getPhotoFocusFitAxes,
   getPhotoFocusSafeRect,
   lerp,
   lerpLongitude,
   photoFocusFillColor,
+  syncPhotoFocusPhonePanelHeight,
 } from '../lib/photoFocus';
 import {
   getCountryTerritories,
@@ -1337,6 +1340,20 @@ export function WorldGlobe({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [photoFocus, selectedCountry]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!photoFocus || size.width > PHOTO_FOCUS_PHONE_MAX_PX) {
+      clearPhotoFocusPhonePanelHeight(container);
+      return;
+    }
+
+    syncPhotoFocusPhonePanelHeight(container, size.height, {
+      reserveTerritoryLinks: photoFocus.territories.length > 1,
+    });
+
+    return () => clearPhotoFocusPhonePanelHeight(container);
+  }, [photoFocus, size.height, size.width]);
 
   const ready = topology !== null && size.width > 0 && size.height > 0;
   const isPhotoFocusing = photoFocus !== null;

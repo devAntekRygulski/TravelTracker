@@ -59,10 +59,86 @@ export type PhotoFocusSafeRect = {
 /** Height of the phone strip reserved for “Go to …” territory links. */
 export const PHOTO_FOCUS_PHONE_TERRITORY_GAP = 2.75 * 16;
 
+/** Default phone upload sheet height (matches PhotoFocusFrame.css fallback). */
+export const PHOTO_FOCUS_PHONE_PANEL_HEIGHT_FRACTION = 0.55;
+
+/** Shortest allowed sheet on very small phones. */
+export const PHOTO_FOCUS_PHONE_PANEL_HEIGHT_MIN_FRACTION = 0.38;
+
+/** Min country band above the sheet when territory links are shown. */
+const PHOTO_FOCUS_PHONE_COUNTRY_BAND_MIN_PX = 300;
+
 export type PhotoFocusSafeRectOptions = {
   /** Reserve a bottom strip so the outline never covers territory links. */
   reserveTerritoryLinks?: boolean;
 };
+
+/**
+ * Phone upload sheet height — shorter when territory links need room so the
+ * country outline stays above the “Go to …” pills.
+ */
+export function getPhotoFocusPhonePanelHeightFraction(
+  viewportHeight: number,
+  options: PhotoFocusSafeRectOptions = {},
+): number {
+  const defaultFraction = PHOTO_FOCUS_PHONE_PANEL_HEIGHT_FRACTION;
+  const rem = 16;
+  const topUi = 8 + 40 + 12;
+  const bottom = 1.5 * rem;
+  const territoryGap = options.reserveTerritoryLinks
+    ? PHOTO_FOCUS_PHONE_TERRITORY_GAP
+    : 0;
+
+  let maxPanelHeight = viewportHeight * defaultFraction;
+
+  if (options.reserveTerritoryLinks) {
+    maxPanelHeight = Math.min(
+      maxPanelHeight,
+      viewportHeight -
+        topUi -
+        bottom -
+        territoryGap -
+        PHOTO_FOCUS_PHONE_COUNTRY_BAND_MIN_PX,
+    );
+  } else if (viewportHeight <= 667) {
+    maxPanelHeight = Math.min(maxPanelHeight, viewportHeight * 0.47);
+  }
+
+  const fraction = maxPanelHeight / viewportHeight;
+  return Math.max(
+    PHOTO_FOCUS_PHONE_PANEL_HEIGHT_MIN_FRACTION,
+    Math.min(defaultFraction, fraction),
+  );
+}
+
+export function getPhotoFocusPhonePanelHeightPx(
+  viewportHeight: number,
+  options: PhotoFocusSafeRectOptions = {},
+): number {
+  return (
+    viewportHeight *
+    getPhotoFocusPhonePanelHeightFraction(viewportHeight, options)
+  );
+}
+
+/** Sets `--photo-focus-phone-panel-height` on the map root (px). */
+export function syncPhotoFocusPhonePanelHeight(
+  root: HTMLElement | null,
+  viewportHeight: number,
+  options: PhotoFocusSafeRectOptions = {},
+): void {
+  if (!root) return;
+  root.style.setProperty(
+    '--photo-focus-phone-panel-height',
+    `${getPhotoFocusPhonePanelHeightPx(viewportHeight, options)}px`,
+  );
+}
+
+export function clearPhotoFocusPhonePanelHeight(
+  root: HTMLElement | null,
+): void {
+  root?.style.removeProperty('--photo-focus-phone-panel-height');
+}
 
 /**
  * Phone bottom-sheet panel metrics — keep in sync with
@@ -81,8 +157,7 @@ export function getPhotoFocusPhonePanelLayout(
   return {
     sideInset: 1.25 * rem,
     bottom: 1.5 * rem,
-    // ~55% of the screen — keep in sync with PhotoFocusFrame.css
-    height: viewportHeight * 0.55,
+    height: getPhotoFocusPhonePanelHeightPx(viewportHeight, options),
     gapAbove: options.reserveTerritoryLinks
       ? PHOTO_FOCUS_PHONE_TERRITORY_GAP
       : 0,

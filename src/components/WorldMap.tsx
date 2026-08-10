@@ -24,10 +24,13 @@ import { useRegionGeoData } from '../hooks/useRegionGeoData';
 import { useCountryHasPhotos } from '../hooks/useCountryHasPhotos';
 import {
   PHOTO_FOCUS_DURATION_MS,
+  PHOTO_FOCUS_PHONE_MAX_PX,
   applyPhotoFocusFrameProgress,
+  clearPhotoFocusPhonePanelHeight,
   computeFlatPhotoFocusTransform,
   flatPhotoFocusTransformString,
   photoFocusFillColor,
+  syncPhotoFocusPhonePanelHeight,
   type PhotoFocusTransform,
 } from '../lib/photoFocus';
 import {
@@ -1038,6 +1041,20 @@ export function WorldMap({
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [photoFocus, selectedCountry, exitPhotoFocus, clearSelection]);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!photoFocus || dimensions.width > PHOTO_FOCUS_PHONE_MAX_PX) {
+      clearPhotoFocusPhonePanelHeight(container);
+      return;
+    }
+
+    syncPhotoFocusPhonePanelHeight(container, dimensions.height, {
+      reserveTerritoryLinks: photoFocus.territories.length > 1,
+    });
+
+    return () => clearPhotoFocusPhonePanelHeight(container);
+  }, [photoFocus, dimensions.height, dimensions.width]);
 
   const startPhotoFocus = useCallback(
     (countryId: string) => {

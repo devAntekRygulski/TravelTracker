@@ -50,7 +50,9 @@
   .photo-focus-territories {
     left: 1.25rem;
     right: auto;
-    bottom: calc(1.5rem + 55vh + 0.55rem);
+    bottom: calc(
+      1.5rem + var(--photo-focus-phone-panel-height, 55vh) + 0.55rem
+    );
     max-width: calc(100% - 2.5rem);
     justify-content: flex-start;
   }
