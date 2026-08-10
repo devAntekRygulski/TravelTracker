@@ -30,6 +30,47 @@ function UploadSpinner() {
   );
 }
 
+/** Minimal trash can with a hinged lid that opens in delete mode. */
+function TrashBinIcon({ open }: { open: boolean }) {
+  return (
+    <svg
+      className={[
+        'photo-focus-frame__bin-icon',
+        open ? 'photo-focus-frame__bin-icon--open' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+    >
+      <g className="photo-focus-frame__bin-lid">
+        <path
+          d="M9.75 5.75v-1.1a1.25 1.25 0 0 1 1.25-1.25h2a1.25 1.25 0 0 1 1.25 1.25v1.1"
+          stroke="currentColor"
+          strokeWidth="1.55"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+        <path
+          d="M5.5 7h13"
+          stroke="currentColor"
+          strokeWidth="1.55"
+          strokeLinecap="round"
+        />
+      </g>
+      <path
+        className="photo-focus-frame__bin-body"
+        d="M7.25 7.75v9.25a2.5 2.5 0 0 0 2.5 2.5h4.5a2.5 2.5 0 0 0 2.5-2.5v-9.25"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function paintCloseX(canvas: HTMLCanvasElement, color: string): void {
   const dpr = window.devicePixelRatio || 1;
   const size = Math.round(CLOSE_CSS_SIZE * dpr);
@@ -87,6 +128,9 @@ export function PhotoFocusFrame({
   const uploading = uploadSource !== null;
   /** True when the user opens "Add photos" over an existing gallery. */
   const [addingMore, setAddingMore] = useState(false);
+  /** Bin selected — photos show delete targets until toggled off. */
+  const [deleteMode, setDeleteMode] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [trackedCountryId, setTrackedCountryId] = useState(countryId);
   const [isPhoneLayout, setIsPhoneLayout] = useState(() =>
@@ -94,6 +138,8 @@ export function PhotoFocusFrame({
       ? window.matchMedia('(max-width: 640px)').matches
       : false,
   );
+  const binRef = useRef<HTMLButtonElement>(null);
+  const cellRefs = useRef<Map<string, HTMLLIElement>>(new Map());
 
   useEffect(() => {
     const media = window.matchMedia('(max-width: 640px)');
@@ -106,6 +152,8 @@ export function PhotoFocusFrame({
   if (trackedCountryId !== countryId) {
     setTrackedCountryId(countryId);
     setAddingMore(false);
+    setDeleteMode(false);
+    setDeletingId(null);
     setLightboxIndex(null);
   }
 
@@ -234,6 +282,12 @@ export function PhotoFocusFrame({
 
   useGuestPendingClaim(countryId, handlePhonePhotosChanged);
 
+  useEffect(() => {
+    if (!hasPhotos && deleteMode) {
+      setDeleteMode(false);
+    }
+  }, [hasPhotos, deleteMode]);
+
   const handleDelete = async (photoId: string) => {
     setActionError(null);
 
@@ -245,6 +299,73 @@ export function PhotoFocusFrame({
           ? deleteError.message
           : 'Failed to delete photo',
       );
+      throw deleteError;
+    }
+  };
+
+  const animatePhotoIntoBin = (photoId: string): Promise<void> => {
+    const cell = cellRefs.current.get(photoId);
+    const bin = binRef.current;
+    if (!cell || !bin) return Promise.resolve();
+
+    const cellRect = cell.getBoundingClientRect();
+    const binRect = bin.getBoundingClientRect();
+    const thumb = cell.querySelector(
+      '.photo-focus-frame__thumb',
+    ) as HTMLImageElement | null;
+
+    const flyer = document.createElement('div');
+    flyer.className = 'photo-focus-frame__fly-clone';
+    flyer.style.left = `${cellRect.left}px`;
+    flyer.style.top = `${cellRect.top}px`;
+    flyer.style.width = `${cellRect.width}px`;
+    flyer.style.height = `${cellRect.height}px`;
+
+    if (thumb) {
+      const img = document.createElement('img');
+      img.src = thumb.currentSrc || thumb.src;
+      img.alt = '';
+      img.draggable = false;
+      flyer.appendChild(img);
+    }
+
+    document.body.appendChild(flyer);
+    cell.classList.add('photo-focus-frame__cell--vanishing');
+
+    const dx =
+      binRect.left + binRect.width / 2 - (cellRect.left + cellRect.width / 2);
+    const dy =
+      binRect.top + binRect.height / 2 - (cellRect.top + cellRect.height / 2);
+
+    return new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          flyer.style.transform = `translate(${dx}px, ${dy}px) scale(0.12) rotate(-8deg)`;
+          flyer.style.opacity = '0.15';
+        });
+      });
+
+      window.setTimeout(() => {
+        flyer.remove();
+        resolve();
+      }, 480);
+    });
+  };
+
+  const handleDeleteWithAnimation = async (photoId: string) => {
+    if (deletingId) return;
+
+    setDeletingId(photoId);
+    setActionError(null);
+
+    try {
+      await animatePhotoIntoBin(photoId);
+      await handleDelete(photoId);
+    } catch {
+      const cell = cellRefs.current.get(photoId);
+      cell?.classList.remove('photo-focus-frame__cell--vanishing');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -324,15 +445,43 @@ export function PhotoFocusFrame({
             {loading ? (
               <p className="photo-focus-frame__empty">Loading photos…</p>
             ) : (
-              <ul className="photo-focus-frame__grid">
+              <ul
+                className={[
+                  'photo-focus-frame__grid',
+                  deleteMode ? 'photo-focus-frame__grid--delete-mode' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+              >
                 {galleryPhotos.map((photo, index) => (
-                  <li key={photo.id} className="photo-focus-frame__cell">
+                  <li
+                    key={photo.id}
+                    className={[
+                      'photo-focus-frame__cell',
+                      deletingId === photo.id
+                        ? 'photo-focus-frame__cell--vanishing'
+                        : '',
+                    ]
+                      .filter(Boolean)
+                      .join(' ')}
+                    ref={(node) => {
+                      if (node) {
+                        cellRefs.current.set(photo.id, node);
+                      } else {
+                        cellRefs.current.delete(photo.id);
+                      }
+                    }}
+                  >
                     {photo.deletable ? (
                       <button
                         type="button"
                         className="photo-focus-frame__thumb-button"
-                        onClick={() => setLightboxIndex(index)}
+                        onClick={() => {
+                          if (deleteMode) return;
+                          setLightboxIndex(index);
+                        }}
                         aria-label={`View photo ${index + 1}`}
+                        tabIndex={deleteMode ? -1 : 0}
                       >
                         <img
                           className="photo-focus-frame__thumb"
@@ -351,17 +500,31 @@ export function PhotoFocusFrame({
                         draggable={false}
                       />
                     )}
-                    {photo.deletable && !showUploadOverlay && (
+                    {photo.deletable && deleteMode && !showUploadOverlay && (
                       <button
                         type="button"
-                        className="photo-focus-frame__delete"
-                        aria-label="Delete photo"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          void handleDelete(photo.id);
-                        }}
+                        className="photo-focus-frame__delete-target"
+                        aria-label={`Delete photo ${index + 1}`}
+                        disabled={deletingId !== null}
+                        onClick={() => void handleDeleteWithAnimation(photo.id)}
                       >
-                        ×
+                        <span
+                          className="photo-focus-frame__delete-haze"
+                          aria-hidden="true"
+                        />
+                        <svg
+                          className="photo-focus-frame__delete-x"
+                          viewBox="0 0 24 24"
+                          aria-hidden="true"
+                        >
+                          <path
+                            d="M6 6L18 18M18 6L6 18"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="1.75"
+                            strokeLinecap="round"
+                          />
+                        </svg>
                       </button>
                     )}
                   </li>
@@ -489,13 +652,36 @@ export function PhotoFocusFrame({
           )}
 
           {hasPhotos && !showUploadOverlay && (
-            <button
-              type="button"
-              className="photo-focus-frame__add-photos"
-              onClick={() => setAddingMore(true)}
-            >
-              Add photos
-            </button>
+            <div className="photo-focus-frame__footer">
+              <button
+                type="button"
+                className="photo-focus-frame__add-photos"
+                aria-label="Add photos"
+                onClick={() => {
+                  setDeleteMode(false);
+                  setAddingMore(true);
+                }}
+              >
+                <span className="photo-focus-frame__add-photos-icon" aria-hidden="true">
+                  +
+                </span>
+              </button>
+              <button
+                ref={binRef}
+                type="button"
+                className={[
+                  'photo-focus-frame__bin',
+                  deleteMode ? 'photo-focus-frame__bin--open' : '',
+                ]
+                  .filter(Boolean)
+                  .join(' ')}
+                aria-label={deleteMode ? 'Cancel deleting photos' : 'Delete photos'}
+                aria-pressed={deleteMode}
+                onClick={() => setDeleteMode((open) => !open)}
+              >
+                <TrashBinIcon open={deleteMode} />
+              </button>
+            </div>
           )}
         </div>
       </aside>

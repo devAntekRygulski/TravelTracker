@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import QRCode from 'qrcode';
 import { useTheme } from '../context/ThemeContext';
 import { useAuth } from '../hooks/useAuth';
@@ -41,37 +41,40 @@ export function PhotoUploadQrPanel({
   const { colorMode } = useTheme();
   const [session, setSession] = useState<SessionState | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [now, setNow] = useState(() => Date.now());
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const knownCountRef = useRef<number | null>(null);
   const useGuestSession = isGuest || !token;
 
-  useEffect(() => {
-    let cancelled = false;
+  const requestIdRef = useRef(0);
 
-    async function start() {
+  const createSession = useCallback(
+    async (allowRestore: boolean) => {
+      const requestId = ++requestIdRef.current;
+      setLoading(true);
+      setError(null);
+      setSession(null);
+
       try {
-        if (useGuestSession) {
+        if (allowRestore && useGuestSession) {
           const restored = await restoreGuestUploadSession(countryId);
-          if (cancelled) return;
+          if (requestId !== requestIdRef.current) return;
           if (restored) {
             setSession({
               token: restored.token,
               uploadUrl: restored.uploadUrl,
               expiresAt: new Date(restored.expiresAt).getTime(),
             });
-            setError(null);
             return;
           }
         }
-
-        if (cancelled) return;
 
         const created = useGuestSession
           ? await api.createGuestUploadSession(countryId, countryName)
           : await api.createUploadSession(token!, countryId, countryName);
 
-        if (cancelled) return;
+        if (requestId !== requestIdRef.current) return;
 
         const expiresAt = new Date(created.expiresAt).getTime();
 
@@ -84,23 +87,28 @@ export function PhotoUploadQrPanel({
           uploadUrl: created.uploadUrl,
           expiresAt,
         });
-        setError(null);
       } catch (sessionError) {
-        if (cancelled) return;
+        if (requestId !== requestIdRef.current) return;
         setError(
           sessionError instanceof Error
             ? sessionError.message
             : 'Failed to create upload session',
         );
+      } finally {
+        if (requestId === requestIdRef.current) {
+          setLoading(false);
+        }
       }
-    }
+    },
+    [useGuestSession, token, countryId, countryName],
+  );
 
-    void start();
-
+  useEffect(() => {
+    void createSession(true);
     return () => {
-      cancelled = true;
+      requestIdRef.current += 1;
     };
-  }, [useGuestSession, token, countryId, countryName]);
+  }, [createSession]);
 
   useEffect(() => {
     if (!session || !canvasRef.current) return;
@@ -171,7 +179,17 @@ export function PhotoUploadQrPanel({
       <p className="photo-upload-qr-panel__label">Upload from phone</p>
 
       {error ? (
-        <p className="photo-upload-qr-panel__error">{error}</p>
+        <div className="photo-upload-qr-panel__error-block">
+          <p className="photo-upload-qr-panel__error">{error}</p>
+          <button
+            type="button"
+            className="photo-upload-qr-panel__retry"
+            disabled={loading}
+            onClick={() => void createSession(false)}
+          >
+            Retry
+          </button>
+        </div>
       ) : session ? (
         <>
           <div className="photo-upload-qr-panel__code">

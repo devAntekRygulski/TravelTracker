@@ -44,8 +44,12 @@
 
 .map-settings-menu__icon {
   display: block;
-  width: 1.125rem;
-  height: 1.125rem;
+  width: 2rem;
+  height: 2rem;
+  background-color: currentColor;
+  /* Exact provided PNG; tinted via currentColor for muted / hover states */
+  -webkit-mask: url('/map-icon.png') center / contain no-repeat;
+  mask: url('/map-icon.png') center / contain no-repeat;
 }
 
 .map-settings-menu__trigger:hover,
@@ -142,7 +146,7 @@
   align-self: flex-end;
 }
 
-/* Header gear is phone-only; oval gear is desktop-only */
+/* Header map icon is phone-only; oval map icon is desktop-only */
 @media (min-width: 641px) {
   .map-settings-menu--header {
     display: none;
@@ -152,5 +156,10 @@
 @media (max-width: 640px) {
   .map-settings-menu--oval {
     display: none;
+  }
+
+  .map-settings-menu--header .map-settings-menu__icon {
+    width: 2.25rem;
+    height: 2.25rem;
   }
 }

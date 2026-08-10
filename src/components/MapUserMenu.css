@@ -122,6 +122,11 @@
     --map-user-menu-width: 10rem;
   }
 
+  .map-user-menu__icon {
+    width: 1.4rem;
+    height: 1.4rem;
+  }
+
   .map-user-menu__panel-inner {
     gap: 0.5rem;
     padding: 0.65rem;
