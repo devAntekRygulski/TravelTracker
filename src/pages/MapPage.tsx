@@ -34,7 +34,7 @@ export function MapPage() {
   } = useVisitedCountries();
   const [regionalViewLocked, setRegionalViewLocked] = useState(false);
   const [projectionMode, setProjectionMode] =
-    useState<MapProjectionMode>('flat');
+    useState<MapProjectionMode>('globe');
   const [realisticMode, setRealisticMode] = useState(getStoredRealisticMode);
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoFocusActive, setPhotoFocusActive] = useState(false);
