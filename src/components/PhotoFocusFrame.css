@@ -56,16 +56,6 @@
   text-overflow: ellipsis;
 }
 
-.photo-focus-frame__title-image {
-  display: block;
-  height: 1.25rem;
-  width: auto;
-  max-width: min(100%, 92%);
-  object-fit: contain;
-  user-select: none;
-  pointer-events: none;
-}
-
 .photo-focus-frame__close {
   position: absolute;
   top: 50%;
@@ -593,10 +583,6 @@
 
   .photo-focus-frame__title {
     font-size: 1.15rem;
-  }
-
-  .photo-focus-frame__title-image {
-    height: 1.1rem;
   }
 
   .photo-focus-frame__grid {

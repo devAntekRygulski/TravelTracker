@@ -1,4 +1,4 @@
-import { geoArea, geoBounds, geoCentroid } from 'd3-geo';
+import { geoArea, geoBounds, geoCentroid, geoContains } from 'd3-geo';
 import type { Feature, Geometry, Polygon, Position } from 'geojson';
 
 export type CountryTerritory = {
@@ -405,4 +405,37 @@ export function getTerritoryById(
     territories.find((territory) => territory.id === territoryId) ??
     territories[0]
   );
+}
+
+/**
+ * Pick the territory under a lon/lat click (e.g. Alaska vs continental USA).
+ * Falls back to nearest centroid, then mainland.
+ */
+export function findTerritoryAtLonLat(
+  territories: CountryTerritory[],
+  lon: number,
+  lat: number,
+): CountryTerritory {
+  if (territories.length === 0) {
+    throw new Error('findTerritoryAtLonLat requires at least one territory');
+  }
+  if (territories.length === 1) return territories[0];
+
+  for (const territory of territories) {
+    if (geoContains(territory.feature, [lon, lat])) {
+      return territory;
+    }
+  }
+
+  let best = territories[0];
+  let bestDist = Infinity;
+  for (const territory of territories) {
+    const [tLon, tLat] = geoCentroid(territory.feature);
+    const dist = centroidDistance([lon, lat], [tLon, tLat]);
+    if (dist < bestDist) {
+      bestDist = dist;
+      best = territory;
+    }
+  }
+  return best;
 }

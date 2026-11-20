@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getCountryNameImageSrc } from '../data/countryNameImages';
 import { SAMPLE_PHOTOS } from '../data/samplePhotos';
 import { useCountryPhotos } from '../hooks/useCountryPhotos';
 import { useGuestPendingClaim } from '../hooks/useGuestPendingClaim';
@@ -120,7 +119,6 @@ export function PhotoFocusFrame({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const nameImageSrc = getCountryNameImageSrc(countryId);
   const { photos, loading, error, upload, remove, refresh } =
     useCountryPhotos(countryId);
   const [uploadSource, setUploadSource] = useState<UploadSource | null>(null);
@@ -402,18 +400,7 @@ export function PhotoFocusFrame({
         aria-label={`Photos for ${countryName}`}
       >
         <header className="photo-focus-frame__header">
-          <h2 className="photo-focus-frame__title">
-            {nameImageSrc ? (
-              <img
-                className="photo-focus-frame__title-image"
-                src={nameImageSrc}
-                alt={countryName}
-                draggable={false}
-              />
-            ) : (
-              countryName
-            )}
-          </h2>
+          <h2 className="photo-focus-frame__title">{countryName}</h2>
           <button
             ref={buttonRef}
             type="button"

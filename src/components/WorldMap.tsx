@@ -36,12 +36,14 @@ import {
 import {
   getCountryTerritories,
   getTerritoryById,
+  findTerritoryAtLonLat,
   type CountryTerritory,
 } from '../lib/countryTerritories';
 import { MapHoverTooltip } from './MapHoverTooltip';
 import { MapCountryActionBox } from './MapCountryActionBox';
 import { PhotoFocusFrame } from './PhotoFocusFrame';
 import { PhotoFocusTerritoryLinks } from './PhotoFocusTerritoryLinks';
+import { SatelliteTileLayer } from './SatelliteTileLayer';
 import './WorldMap.css';
 
 const GEO_URL = '/countries-110m.json';
@@ -65,6 +67,8 @@ const COLORS = {
   yellow: 'var(--yellow-bright)',
   mapStroke: 'var(--yellow-map)',
 };
+
+const REALISTIC_BORDER = 'rgba(255, 255, 255, 0.82)';
 
 const COUNTRY_GAP = 4;
 const BORDER_WIDTH = 0.3;
@@ -258,7 +262,27 @@ function getHoverTransform(
   return `translate(${cx},${cy}) scale(${HOVER_SCALE}) translate(${-cx},${-cy})`;
 }
 
-function countryFillStyle(visited: boolean, hovered = false) {
+function countryFillStyle(
+  visited: boolean,
+  hovered = false,
+  realistic = false,
+) {
+  if (realistic) {
+    return {
+      fill: visited
+        ? COLORS.yellow
+        : hovered
+          ? 'rgba(255, 255, 255, 0.28)'
+          : 'transparent',
+      stroke: 'transparent',
+      strokeWidth: 0,
+      strokeLinejoin: 'round' as const,
+      paintOrder: 'stroke fill' as const,
+      vectorEffect: 'non-scaling-stroke' as const,
+      outline: 'none',
+    };
+  }
+
   return {
     fill: visited ? COLORS.yellow : hovered ? COLORS.hover : COLORS.bg,
     stroke: COLORS.bg,
@@ -270,10 +294,10 @@ function countryFillStyle(visited: boolean, hovered = false) {
   };
 }
 
-function countryBorderStyle(strokeWidth = BORDER_WIDTH) {
+function countryBorderStyle(strokeWidth = BORDER_WIDTH, realistic = false) {
   return {
     fill: 'none',
-    stroke: COLORS.mapStroke,
+    stroke: realistic ? REALISTIC_BORDER : COLORS.mapStroke,
     strokeWidth,
     strokeLinejoin: 'round' as const,
     vectorEffect: 'non-scaling-stroke' as const,
@@ -283,7 +307,9 @@ function countryBorderStyle(strokeWidth = BORDER_WIDTH) {
 }
 
 const BASE_COUNTRY_FILL_STYLE = countryFillStyle(false);
+const REALISTIC_BASE_COUNTRY_FILL_STYLE = countryFillStyle(false, false, true);
 const COUNTRY_BORDER_STYLE = countryBorderStyle();
+const REALISTIC_COUNTRY_BORDER_STYLE = countryBorderStyle(BORDER_WIDTH, true);
 // Invisible hit-test layer: transparent fills cost almost nothing to paint.
 const REGION_STATIC_STYLE = {
   fill: 'transparent',
@@ -291,24 +317,35 @@ const REGION_STATIC_STYLE = {
   cursor: 'pointer',
   outline: 'none',
 };
-const REGION_HOVER_STYLE = {
-  ...countryFillStyle(false, true),
+const REGION_HOVER_STYLE = (realistic: boolean) => ({
+  ...countryFillStyle(false, true, realistic),
   pointerEvents: 'none' as const,
-};
-const REGION_VISITED_STYLE = {
-  ...countryFillStyle(true),
+});
+const REGION_VISITED_STYLE = (realistic: boolean) => ({
+  ...countryFillStyle(true, false, realistic),
   pointerEvents: 'none' as const,
-};
+});
 
-const REGION_BORDER_STYLE = {
+const REGION_BORDER_STYLE = (realistic: boolean) => ({
   fill: 'none',
-  stroke: COLORS.mapStroke,
+  stroke: realistic ? REALISTIC_BORDER : COLORS.mapStroke,
   strokeWidth: REGION_BORDER_WIDTH,
   strokeOpacity: REGION_BORDER_OPACITY,
   strokeLinejoin: 'round' as const,
   vectorEffect: 'non-scaling-stroke' as const,
   pointerEvents: 'none' as const,
-};
+});
+
+const CITY_OUTLINE_STYLE = (realistic: boolean) => ({
+  fill: 'none',
+  stroke: realistic ? REALISTIC_BORDER : COLORS.mapStroke,
+  strokeWidth: 0.28,
+  strokeOpacity: 0.55,
+  strokeDasharray: '3 2',
+  strokeLinejoin: 'round' as const,
+  vectorEffect: 'non-scaling-stroke' as const,
+  pointerEvents: 'none' as const,
+});
 
 function regionalBorderOpacity(zoom: number): number {
   if (zoom <= REGION_BORDERS_FADE_START) return 0;
@@ -319,23 +356,13 @@ function regionalBorderOpacity(zoom: number): number {
   return REGION_BORDER_OPACITY * t;
 }
 
-const CITY_OUTLINE_STYLE = {
-  fill: 'none',
-  stroke: COLORS.mapStroke,
-  strokeWidth: 0.28,
-  strokeOpacity: 0.55,
-  strokeDasharray: '3 2',
-  strokeLinejoin: 'round' as const,
-  vectorEffect: 'non-scaling-stroke' as const,
-  pointerEvents: 'none' as const,
-};
-
 interface WorldMapProps {
   isVisited: (countryId: string) => boolean;
   onToggle: (countryId: string) => void;
   isRegionVisited: (regionId: string) => boolean;
   onToggleRegion: (regionId: string) => void;
   regionalViewLocked: boolean;
+  realisticMode?: boolean;
   onPhotoFocusChange?: (active: boolean) => void;
   onLightboxChange?: (open: boolean) => void;
 }
@@ -367,14 +394,17 @@ function createMapProjection(
   topology: Topology,
   width: number,
   height: number,
+  realistic = false,
 ): GeoProjection {
   const collection = feature(
     topology,
     topology.objects.countries as Parameters<typeof feature>[1],
   ) as FeatureCollection<Geometry>;
 
+  // Realistic mode must stay unrotated so XYZ satellite tiles stay rectangular
+  // and line up with country borders (same as Google Earth / web maps).
   const projection = geoMercator()
-    .rotate(MAP_ROTATION)
+    .rotate(realistic ? [0, 0] : MAP_ROTATION)
     .fitExtent(
       [
         [MAP_PADDING.left, MAP_PADDING.top],
@@ -416,6 +446,7 @@ export function WorldMap({
   isRegionVisited,
   onToggleRegion,
   regionalViewLocked,
+  realisticMode = false,
   onPhotoFocusChange,
   onLightboxChange,
 }: WorldMapProps) {
@@ -445,6 +476,8 @@ export function WorldMap({
     /** Click point in the country group's SVG user space. */
     anchorLocalX: number;
     anchorLocalY: number;
+    /** Territory under the click (mainland, Alaska, Hawaii, …). */
+    territoryId: string;
   } | null>(null);
   const { hasPhotos: selectedHasPhotos, ready: selectedPhotosReady } =
     useCountryHasPhotos(selectedCountry?.id ?? null);
@@ -538,8 +571,13 @@ export function WorldMap({
       return null;
     }
 
-    return createMapProjection(topology, dimensions.width, dimensions.height);
-  }, [topology, dimensions]);
+    return createMapProjection(
+      topology,
+      dimensions.width,
+      dimensions.height,
+      realisticMode,
+    );
+  }, [topology, dimensions, realisticMode]);
 
   const pathGenerator = useMemo(
     () => (mapProjection ? geoPath(mapProjection) : null),
@@ -741,7 +779,7 @@ export function WorldMap({
               <path
                 key={getCityId(cityFeature, index)}
                 d={d}
-                style={CITY_OUTLINE_STYLE}
+                style={CITY_OUTLINE_STYLE(realisticMode)}
               >
                 <title>{getCityName(cityFeature)}</title>
               </path>
@@ -750,7 +788,7 @@ export function WorldMap({
         </g>
       </g>
     );
-  }, [visibleCities, pathGenerator]);
+  }, [visibleCities, pathGenerator, realisticMode]);
 
   const handleMapMoveEnd = useCallback(
     (position: { coordinates: [number, number]; zoom: number }) => {
@@ -837,11 +875,19 @@ export function WorldMap({
     () => (
       <g pointerEvents="none" aria-hidden="true">
         {countryPathDs.map((d, index) => (
-          <path key={index} d={d} style={BASE_COUNTRY_FILL_STYLE} />
+          <path
+            key={index}
+            d={d}
+            style={
+              realisticMode
+                ? REALISTIC_BASE_COUNTRY_FILL_STYLE
+                : BASE_COUNTRY_FILL_STYLE
+            }
+          />
         ))}
       </g>
     ),
-    [countryPathDs],
+    [countryPathDs, realisticMode],
   );
 
   const countryBorderLayer = useMemo(() => {
@@ -851,10 +897,15 @@ export function WorldMap({
 
     return (
       <g pointerEvents="none" aria-hidden="true">
-        <path d={countryBordersD} style={COUNTRY_BORDER_STYLE} />
+        <path
+          d={countryBordersD}
+          style={
+            realisticMode ? REALISTIC_COUNTRY_BORDER_STYLE : COUNTRY_BORDER_STYLE
+          }
+        />
       </g>
     );
-  }, [countryBordersD]);
+  }, [countryBordersD, realisticMode]);
 
   const countriesClipDef = useMemo(
     () => (
@@ -932,11 +983,15 @@ export function WorldMap({
     () => (
       <g pointerEvents="none" aria-hidden="true">
         {visitedRegionPaths.map((region) => (
-          <path key={region.id} d={region.d} style={REGION_VISITED_STYLE} />
+          <path
+            key={region.id}
+            d={region.d}
+            style={REGION_VISITED_STYLE(realisticMode)}
+          />
         ))}
       </g>
     ),
-    [visitedRegionPaths],
+    [visitedRegionPaths, realisticMode],
   );
 
   const hoveredRegion =
@@ -1057,7 +1112,7 @@ export function WorldMap({
   }, [photoFocus, dimensions.height, dimensions.width]);
 
   const startPhotoFocus = useCallback(
-    (countryId: string) => {
+    (countryId: string, territoryId?: string) => {
       if (!mapProjection || showRegionalView || photoFocusRef.current) return;
 
       const geo = countryFeatures.find(
@@ -1066,9 +1121,11 @@ export function WorldMap({
       if (!geo) return;
 
       const territories = getCountryTerritories(geo);
-      const mainland = territories[0];
+      const startTerritory = territoryId
+        ? getTerritoryById(territories, territoryId)
+        : territories[0];
       const transform = computeFlatPhotoFocusTransform(
-        mainland.feature,
+        startTerritory.feature,
         mapProjection,
         dimensions.width,
         dimensions.height,
@@ -1095,7 +1152,7 @@ export function WorldMap({
       const startFill = isVisited(countryId) ? COLORS.yellow : COLORS.hover;
       const base = {
         countryId,
-        territoryId: mainland.id,
+        territoryId: startTerritory.id,
         territories,
         transform,
         startFill,
@@ -1234,7 +1291,12 @@ export function WorldMap({
           hasPhotos={selectedHasPhotos}
           photosReady={selectedPhotosReady}
           onMark={() => onToggle(selectedCountry.id)}
-          onAddPhotos={() => startPhotoFocus(selectedCountry.id)}
+          onAddPhotos={() =>
+            startPhotoFocus(
+              selectedCountry.id,
+              selectedCountry.territoryId,
+            )
+          }
         />
       )}
       {showRegionalLoading && (
@@ -1282,6 +1344,15 @@ export function WorldMap({
               mapZoomFilter(event as unknown as Event)
             }
           >
+            {realisticMode && mapProjection && (
+              <SatelliteTileLayer
+                projection={mapProjection}
+                width={dimensions.width}
+                height={dimensions.height}
+                mapCenter={mapCenter}
+                mapZoom={mapZoom}
+              />
+            )}
             {!showRegionalView && (
               <Geographies geography={topology}>
                 {({ geographies }) =>
@@ -1326,6 +1397,7 @@ export function WorldMap({
                         ...countryFillStyle(
                           visited,
                           isHighlighted,
+                          realisticMode,
                         ),
                         cursor: isPhotoFocusing ? 'default' : 'pointer',
                         opacity,
@@ -1335,6 +1407,7 @@ export function WorldMap({
                           isHighlighted || isFocusCountry
                             ? BORDER_WIDTH_ACTIVE
                             : BORDER_WIDTH,
+                          realisticMode,
                         ),
                         opacity,
                       };
@@ -1348,12 +1421,12 @@ export function WorldMap({
 
                       if (isFocusCountry && photoFocus && pathGenerator) {
                         const remoteStyle = {
-                          ...countryFillStyle(visited, false),
+                          ...countryFillStyle(visited, false, realisticMode),
                           cursor: 'default',
                           opacity: 1,
                         };
                         const remoteBorder = {
-                          ...countryBorderStyle(BORDER_WIDTH),
+                          ...countryBorderStyle(BORDER_WIDTH, realisticMode),
                           opacity: 1,
                         };
                         const focusFillStyle = {
@@ -1444,6 +1517,34 @@ export function WorldMap({
                                 anchorLocalX = local.x;
                                 anchorLocalY = local.y;
                               }
+
+                              let territoryId = 'mainland';
+                              if (mapProjection?.invert) {
+                                const centerProj = mapProjection(mapCenter);
+                                if (centerProj) {
+                                  const zoom = mapZoomRef.current || 1;
+                                  const mapX =
+                                    (x - dimensions.width / 2) / zoom +
+                                    centerProj[0];
+                                  const mapY =
+                                    (y - dimensions.height / 2) / zoom +
+                                    centerProj[1];
+                                  const geoPoint = mapProjection.invert([
+                                    mapX,
+                                    mapY,
+                                  ]);
+                                  if (geoPoint) {
+                                    const territories =
+                                      getCountryTerritories(geo);
+                                    territoryId = findTerritoryAtLonLat(
+                                      territories,
+                                      geoPoint[0],
+                                      geoPoint[1],
+                                    ).id;
+                                  }
+                                }
+                              }
+
                               setSelectedCountry({
                                 id: countryId,
                                 label: countryName,
@@ -1451,6 +1552,7 @@ export function WorldMap({
                                 y,
                                 anchorLocalX,
                                 anchorLocalY,
+                                territoryId,
                               });
                             }}
                             style={{
@@ -1487,7 +1589,10 @@ export function WorldMap({
                   aria-hidden="true"
                 >
                   {hoveredRegion && (
-                    <path d={hoveredRegion.d} style={REGION_HOVER_STYLE} />
+                    <path
+                      d={hoveredRegion.d}
+                      style={REGION_HOVER_STYLE(realisticMode)}
+                    />
                   )}
                   {visitedRegionsLayer}
                 </g>
@@ -1498,7 +1603,7 @@ export function WorldMap({
                       ref={regionBorderPathRef}
                       d={innerBordersD ?? undefined}
                       style={{
-                        ...REGION_BORDER_STYLE,
+                        ...REGION_BORDER_STYLE(realisticMode),
                         strokeOpacity: regionBorderOpacity,
                         shapeRendering: 'optimizeSpeed',
                       }}

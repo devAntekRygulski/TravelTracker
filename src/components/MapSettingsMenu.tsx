@@ -4,6 +4,7 @@ import {
   MapProjectionToggle,
   type MapProjectionMode,
 } from './MapProjectionToggle';
+import { MapRealisticToggle } from './MapRealisticToggle';
 import { MapThemeToggle } from './MapThemeToggle';
 import { MapViewToggle } from './MapViewToggle';
 import './MapSettingsMenu.css';
@@ -13,6 +14,8 @@ interface MapSettingsMenuProps {
   onRegionalViewChange: (regionalViewLocked: boolean) => void;
   projectionMode: MapProjectionMode;
   onProjectionModeChange: (mode: MapProjectionMode) => void;
+  realisticMode: boolean;
+  onRealisticModeChange: (realisticMode: boolean) => void;
   hidden?: boolean;
   /** header = phone top-left; oval = desktop left of stats counters */
   placement?: 'header' | 'oval';
@@ -30,6 +33,8 @@ export function MapSettingsMenu({
   onRegionalViewChange,
   projectionMode,
   onProjectionModeChange,
+  realisticMode,
+  onRealisticModeChange,
   hidden = false,
   placement = 'header',
 }: MapSettingsMenuProps) {
@@ -99,6 +104,10 @@ export function MapSettingsMenu({
           <MapProjectionToggle
             mode={projectionMode}
             onChange={onProjectionModeChange}
+          />
+          <MapRealisticToggle
+            enabled={realisticMode}
+            onChange={onRealisticModeChange}
           />
           <MapViewToggle
             regionalViewLocked={regionalViewLocked}

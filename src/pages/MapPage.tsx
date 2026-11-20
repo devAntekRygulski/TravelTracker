@@ -12,6 +12,10 @@ import { prefetchCountryPhotoPresence } from '../hooks/useCountryHasPhotos';
 import { prefetchRegionMap } from '../hooks/useRegionGeoData';
 import { useVisitedCountries } from '../hooks/useVisitedCountries';
 import { downloadFlatMapPng } from '../lib/exportFlatMapPng';
+import {
+  getStoredRealisticMode,
+  setStoredRealisticMode,
+} from '../lib/mapRealisticMode';
 import './MapPage.css';
 
 const LOGO_URL = '/travel-tracker-logo.png';
@@ -31,6 +35,7 @@ export function MapPage() {
   const [regionalViewLocked, setRegionalViewLocked] = useState(false);
   const [projectionMode, setProjectionMode] =
     useState<MapProjectionMode>('flat');
+  const [realisticMode, setRealisticMode] = useState(getStoredRealisticMode);
   const [menuOpen, setMenuOpen] = useState(false);
   const [photoFocusActive, setPhotoFocusActive] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -81,6 +86,11 @@ export function MapPage() {
     }
   };
 
+  const handleRealisticModeChange = (enabled: boolean) => {
+    setRealisticMode(enabled);
+    setStoredRealisticMode(enabled);
+  };
+
   const handleMyAccount = () => {
     setMenuOpen(false);
     if (isGuest || !user) {
@@ -128,6 +138,8 @@ export function MapPage() {
                 onRegionalViewChange={setRegionalViewLocked}
                 projectionMode={projectionMode}
                 onProjectionModeChange={handleProjectionModeChange}
+                realisticMode={realisticMode}
+                onRealisticModeChange={handleRealisticModeChange}
                 hidden={photoFocusActive}
               />
             </div>
@@ -154,6 +166,8 @@ export function MapPage() {
             onRegionalViewChange={setRegionalViewLocked}
             projectionMode={projectionMode}
             onProjectionModeChange={handleProjectionModeChange}
+            realisticMode={realisticMode}
+            onRealisticModeChange={handleRealisticModeChange}
             hideToggles={photoFocusActive}
           />
         )}
@@ -161,6 +175,7 @@ export function MapPage() {
           <WorldGlobe
             isVisited={isVisited}
             onToggle={toggle}
+            realisticMode={realisticMode}
             onPhotoFocusChange={setPhotoFocusActive}
             onLightboxChange={setLightboxOpen}
           />
@@ -171,6 +186,7 @@ export function MapPage() {
             isRegionVisited={isRegionVisited}
             onToggleRegion={toggleRegion}
             regionalViewLocked={regionalViewLocked}
+            realisticMode={realisticMode}
             onPhotoFocusChange={setPhotoFocusActive}
             onLightboxChange={setLightboxOpen}
           />

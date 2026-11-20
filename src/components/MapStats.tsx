@@ -10,6 +10,8 @@ interface MapStatsProps {
   onRegionalViewChange: (regionalViewLocked: boolean) => void;
   projectionMode: MapProjectionMode;
   onProjectionModeChange: (mode: MapProjectionMode) => void;
+  realisticMode: boolean;
+  onRealisticModeChange: (realisticMode: boolean) => void;
   hideToggles?: boolean;
 }
 
@@ -63,6 +65,8 @@ export function MapStats({
   onRegionalViewChange,
   projectionMode,
   onProjectionModeChange,
+  realisticMode,
+  onRealisticModeChange,
   hideToggles = false,
 }: MapStatsProps) {
   const percentVisited = Math.round(
@@ -82,6 +86,8 @@ export function MapStats({
             onRegionalViewChange={onRegionalViewChange}
             projectionMode={projectionMode}
             onProjectionModeChange={onProjectionModeChange}
+            realisticMode={realisticMode}
+            onRealisticModeChange={onRealisticModeChange}
             hidden={hideToggles}
           />
         </div>
