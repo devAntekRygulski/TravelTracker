@@ -30,6 +30,7 @@ export function MapRealisticToggle({
         onClick={() => onChange(true)}
       >
         <span className="map-view-toggle__label">Realistic</span>
+        <span className="map-view-toggle__beta">Beta</span>
       </button>
     </div>
   );
